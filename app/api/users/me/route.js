@@ -1,35 +1,70 @@
 import { NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs";
-import connectToDB from "@/lib/database";
-import User from "@/models/User";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 export async function GET() {
   try {
-    const user = await currentUser();
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          get(name) {
+            return cookieStore.get(name)?.value;
+          },
+          set(name, value, options) {
+            cookieStore.set(name, value, options);
+          },
+          remove(name, options) {
+            cookieStore.set(name, "", { ...options, maxAge: 0 });
+          },
+        },
+      }
+    );
 
-    if (!user) {
-      return new NextResponse("Unauthorized", { status: 401 });
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
-    await connectToDB();
+    // Get user profile from profiles table
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
 
-    const dbUser = await User.findOne({ clerkId: user.id });
-
-    if (!dbUser) {
-      return new NextResponse("User not found", { status: 404 });
+    if (profileError || !profile) {
+      return NextResponse.json(
+        { success: false, message: "User not found" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({
-      id: dbUser._id,
-      clerkId: dbUser.clerkId,
-      name: dbUser.name,
-      email: dbUser.email,
-      role: dbUser.role,
-      image: dbUser.image,
-      bio: dbUser.bio,
+      success: true,
+      data: {
+        id: profile.id,
+        name: profile.name,
+        email: user.email,
+        role: profile.role,
+        image: profile.avatar_url,
+        bio: profile.bio,
+      },
     });
   } catch (error) {
     console.error("Error fetching user:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    return NextResponse.json(
+      { success: false, message: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }

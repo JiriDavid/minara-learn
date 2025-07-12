@@ -1,8 +1,24 @@
 import Link from "next/link";
 import { Facebook, Twitter, Instagram, Linkedin, Mail } from "lucide-react";
+import { useEffect, useState } from "react";
+import Image from "next/image"; // Don't forget to import this
 
 const Footer = () => {
+  const [theme, setTheme] = useState("light"); // ✅ Proper initialization
+
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [theme]);
+
   const currentYear = new Date().getFullYear();
+  const logoSrc =
+    theme === "dark"
+      ? "/minara-learn-logo-white.svg"
+      : "/minara-learn-logo-white.svg";
 
   return (
     <footer className="bg-slate-900 text-white pt-12 pb-8">
@@ -10,8 +26,14 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo and description */}
           <div className="col-span-1 md:col-span-1">
-            <Link href="/" className="text-2xl font-bold text-blue-400">
-              E-Xtra LMS
+            <Link href="/">
+              <Image
+                src={logoSrc}
+                width={200}
+                height={100}
+                alt="Minara Logo"
+                className="h-12 w-auto mb-4"
+              />
             </Link>
             <p className="mt-3 text-sm text-slate-400">
               Empowering education through technology. Our learning management

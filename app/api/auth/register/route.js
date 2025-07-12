@@ -1,65 +1,97 @@
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import connectToDB from "@/lib/db/mongoose";
-import User from "@/models/User";
 
 export async function POST(request) {
   try {
-    const { name, email, password } = await request.json();
+    const { email, password, name, role } = await request.json();
 
-    // Validate input
-    if (!name || !email || !password) {
+    if (!email || !password || !name || !role) {
       return NextResponse.json(
-        { message: "Missing required fields" },
+        { success: false, message: "All fields are required" },
         { status: 400 }
       );
     }
 
-    // Connect to database
-    await connectToDB();
-
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-
-    if (existingUser) {
+    // Validate role
+    const validRoles = ["student", "lecturer", "admin"];
+    if (!validRoles.includes(role)) {
       return NextResponse.json(
-        { message: "User with this email already exists" },
-        { status: 409 }
+        { success: false, message: "Invalid role" },
+        { status: 400 }
       );
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    // ✅ Await cookies() here
+    const cookieStore = await cookies();
 
-    // Create user
-    const newUser = new User({
-      name,
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          get: async (name) => {
+            const value = await cookieStore.get(name);
+            return value?.value;
+          },
+          set: async (name, value, options) => {
+            await cookieStore.set(name, value, options);
+          },
+          remove: async (name, options) => {
+            await cookieStore.set(name, "", { ...options, maxAge: 0 });
+          },
+        },
+      }
+    );
+
+    // Create user in Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
-      password: hashedPassword,
-      role: "student",
-      isVerified: false,
+      password,
     });
 
-    await newUser.save();
+    if (authError) {
+      return NextResponse.json(
+        { success: false, message: authError.message },
+        { status: 400 }
+      );
+    }
 
-    // Return success response without password
-    const userResponse = {
-      _id: newUser._id,
-      name: newUser.name,
-      email: newUser.email,
-      role: newUser.role,
-      isVerified: newUser.isVerified,
-    };
+    // Create profile in profiles table
+    const { error: profileError } = await supabase.from("profiles").insert({
+      id: authData.user.id,
+      email,
+      name,
+      role,
+      avatar_url: null,
+      bio: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
 
-    return NextResponse.json(
-      { message: "User registered successfully", user: userResponse },
-      { status: 201 }
-    );
+    if (profileError) {
+      // Clean up if profile creation fails
+      await supabase.auth.admin.deleteUser(authData.user.id);
+      return NextResponse.json(
+        { success: false, message: "Failed to create user profile" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "User registered successfully",
+      data: {
+        id: authData.user.id,
+        email,
+        name,
+        role,
+      },
+    });
   } catch (error) {
     console.error("Registration error:", error);
     return NextResponse.json(
-      { message: "Failed to register user" },
+      { success: false, message: "Internal server error" },
       { status: 500 }
     );
   }

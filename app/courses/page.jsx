@@ -3,8 +3,8 @@ import { Book, Search, Filter } from "lucide-react";
 import CourseCard from "@/components/CourseCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import connectToDB from "@/lib/database";
-import Course from "@/models/Course";
+import { getServerSupabaseClient } from "@/lib/supabase";
+import Background from "@/components/Background";
 
 export const metadata = {
   title: "Browse Courses | E-X-TRA LMS",
@@ -12,17 +12,30 @@ export const metadata = {
     "Browse through our collection of courses and start learning today",
 };
 
-// Function to fetch courses from the database
+// Function to fetch courses from Supabase
 async function getCourses() {
   try {
-    await connectToDB();
+    const supabase = getServerSupabaseClient();
 
-    const courses = await Course.find({ isPublished: true })
-      .populate("lecturer", "name image")
-      .sort({ createdAt: -1 })
+    const { data: courses, error } = await supabase
+      .from("courses")
+      .select(
+        `
+        *,
+        lecturer:profiles(name, avatar_url)
+      `
+      )
+      .not("published_at", "is", null)
+      .order("created_at", { ascending: false })
       .limit(20);
 
-    return JSON.parse(JSON.stringify(courses));
+    if (error) {
+      console.error("Error fetching courses:", error);
+      return [];
+    }
+
+    console.log("Fetched courses:", courses);
+    return courses;
   } catch (error) {
     console.error("Error fetching courses:", error);
     return [];
@@ -33,7 +46,8 @@ export default async function CoursesPage() {
   const courses = await getCourses();
 
   return (
-    <div className="container py-10">
+    <div className="container py-10 px-6">
+      <Background />
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold mb-2">Browse Courses</h1>
@@ -59,7 +73,7 @@ export default async function CoursesPage() {
       {courses.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {courses.map((course) => (
-            <CourseCard key={course._id} course={course} />
+            <CourseCard key={course.id} course={course} />
           ))}
         </div>
       ) : (

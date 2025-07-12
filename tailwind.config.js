@@ -1,82 +1,50 @@
-/** @type {import('tailwindcss').Config} */
+// tailwind.config.js
 module.exports = {
-  darkMode: ["class"],
   content: [
-    "./pages/**/*.{js,jsx}",
-    "./components/**/*.{js,jsx}",
-    "./app/**/*.{js,jsx}",
-    "./src/**/*.{js,jsx}",
+    "./app/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    container: {
-      center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
-    },
     extend: {
       colors: {
-        primary: {
-          50: "#fff9e6",
-          100: "#fff3cc",
-          200: "#ffe799",
-          300: "#ffdb66",
-          400: "#ffcf33",
-          500: "#ffc300",
-          600: "#cc9c00",
-          700: "#997500",
-          800: "#664e00",
-          900: "#332700",
-        },
-        secondary: {
-          50: "#fff5e6",
-          100: "#ffebcc",
-          200: "#ffd799",
-          300: "#ffc366",
-          400: "#ffaf33",
-          500: "#ff9b00",
-          600: "#cc7c00",
-          700: "#995d00",
-          800: "#663e00",
-          900: "#331f00",
-        },
-        accent: {
-          50: "#fff0e6",
-          100: "#ffe1cc",
-          200: "#ffc399",
-          300: "#ffa566",
-          400: "#ff8733",
-          500: "#ff6900",
-          600: "#cc5400",
-          700: "#993f00",
-          800: "#662a00",
-          900: "#331500",
-        },
-        background: {
-          light: "#fff9e6",
-          dark: "#1a1a1a",
-        },
-        text: {
-          light: "#332700",
-          dark: "#fff9e6",
-        },
+        background: "oklch(var(--background) / <alpha-value>)",
+        foreground: "oklch(var(--foreground) / <alpha-value>)",
+        border: "oklch(var(--border) / <alpha-value>)",
+        input: "oklch(var(--input) / <alpha-value>)",
+        ring: "oklch(var(--ring) / <alpha-value>)",
+        primary: "oklch(var(--primary) / <alpha-value>)",
+        "primary-foreground": "oklch(var(--primary-foreground) / <alpha-value>)",
+        secondary: "oklch(var(--secondary) / <alpha-value>)",
+        "secondary-foreground": "oklch(var(--secondary-foreground) / <alpha-value>)",
+        muted: "oklch(var(--muted) / <alpha-value>)",
+        "muted-foreground": "oklch(var(--muted-foreground) / <alpha-value>)",
+        accent: "oklch(var(--accent) / <alpha-value>)",
+        "accent-foreground": "oklch(var(--accent-foreground) / <alpha-value>)",
+        destructive: "oklch(var(--destructive) / <alpha-value>)",
+        card: "oklch(var(--card) / <alpha-value>)",
+        "card-foreground": "oklch(var(--card-foreground) / <alpha-value>)",
+        popover: "oklch(var(--popover) / <alpha-value>)",
+        "popover-foreground": "oklch(var(--popover-foreground) / <alpha-value>)",
+        sidebar: "oklch(var(--sidebar) / <alpha-value>)",
+        "sidebar-foreground": "oklch(var(--sidebar-foreground) / <alpha-value>)",
+        "sidebar-accent": "oklch(var(--sidebar-accent) / <alpha-value>)",
+        "sidebar-accent-foreground": "oklch(var(--sidebar-accent-foreground) / <alpha-value>)",
+        "sidebar-border": "oklch(var(--sidebar-border) / <alpha-value>)",
+        "sidebar-ring": "oklch(var(--sidebar-ring) / <alpha-value>)",
       },
-      keyframes: {
-        "accordion-down": {
-          from: { height: 0 },
-          to: { height: "var(--radix-accordion-content-height)" },
-        },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: 0 },
-        },
+      borderRadius: {
+        sm: "var(--radius-sm)",
+        md: "var(--radius-md)",
+        lg: "var(--radius-lg)",
+        xl: "var(--radius-xl)",
       },
-      animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
+      fontFamily: {
+        sans: "var(--font-sans)",
+        mono: "var(--font-mono)",
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-};
+  plugins: [
+    require("tailwindcss-animate"),
+  ],
+}

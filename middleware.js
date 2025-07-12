@@ -1,23 +1,19 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextRequest } from 'next/server'
+import { updateSession } from '@/utils/supabase/middleware'
 
-// Create a route matcher to check public routes
-const isPublicRoute = createRouteMatcher([
-  "/",
-  "/courses",
-  "/courses/(.*)",
-  "/api/courses(.*)",
-  "/sign-in(.*)",
-  "/sign-up(.*)",
-  "/api/webhooks(.*)",
-]);
-
-export default clerkMiddleware({
-  // Set publicRoutes using a matcher function
-  publicRoutes: (req) => isPublicRoute(req.url),
-  // Ignore webhook routes
-  ignoredRoutes: ["/api/webhooks(.*)"],
-});
+export async function middleware(request) {
+  return await updateSession(request)
+}
 
 export const config = {
-  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
-};
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * Feel free to modify this pattern to include more paths.
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
+}

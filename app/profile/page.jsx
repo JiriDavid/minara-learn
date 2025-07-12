@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth } from "@/lib/auth-context";
 import {
   Camera,
   Mail,
@@ -41,7 +41,7 @@ import { Link } from "next/link";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { userId, isLoaded } = useAuth();
+  const { user, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [profileData, setProfileData] = useState(null);
@@ -66,7 +66,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        if (!isLoaded || !userId) return;
+        if (loading || !user) return;
 
         setIsLoading(true);
         // In a real app, fetch from API
@@ -75,9 +75,9 @@ export default function ProfilePage() {
 
         // Mock data for demonstration
         const mockProfileData = {
-          id: userId,
-          name: "John Doe",
-          email: "john.doe@example.com",
+          id: user.id,
+          name: user.user_metadata?.full_name || "User",
+          email: user.email,
           bio: "Passionate learner and web developer with interests in JavaScript, React, and Node.js.",
           image: "https://placehold.co/200/2563eb/FFFFFF/png?text=JD",
           role: "student",
@@ -124,7 +124,7 @@ export default function ProfilePage() {
     };
 
     fetchProfileData();
-  }, [userId, isLoaded]);
+  }, [user, loading]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -192,12 +192,17 @@ export default function ProfilePage() {
       .toUpperCase();
   };
 
-  if (!isLoaded || isLoading) {
+  if (loading || isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600"></div>
       </div>
     );
+  }
+
+  if (!user) {
+    router.push("/login");
+    return null;
   }
 
   if (!profileData) {

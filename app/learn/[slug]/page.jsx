@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
+import Link from "next/link";
+import Image from "next/image";
+import { useAuth } from "@/lib/auth-context";
 import { ChevronLeft, Play, Lock, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {

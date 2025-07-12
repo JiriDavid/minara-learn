@@ -1,114 +1,98 @@
 import { NextResponse } from "next/server";
-import { clerkClient } from "@clerk/nextjs";
-
-import connectToDB from "@/lib/db";
-import User from "@/models/User";
+import { supabase } from "@/lib/supabase";
 
 // GET: Get user by ID
-export async function GET(request, { params }) {
-  try {
-    const { id } = params;
+export async function GET(request) {
+  const id = new URL(request.url).pathname.split("/").pop();
+  console.log("id is :", id);
 
-    await connectToDB();
+  const { data: user, error } = await supabase
+    .from("profiles") // or "users" depending on your table
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
 
-    const user = await User.findById(id).select('-__v');
 
-    if (!user) {
-      return NextResponse.json(
-        { message: "User not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ user }, { status: 200 });
-  } catch (error) {
+  if (error || !user) {
     console.error("Error fetching user:", error);
     return NextResponse.json(
-      { message: "Failed to fetch user" },
-      { status: 500 }
+      { message: "User not found" },
+      { status: 404 }
     );
   }
+
+  return NextResponse.json({ user }, { status: 200 });
 }
 
 // PATCH: Update user by ID
 export async function PATCH(request, { params }) {
-  try {
-    const { id } = params;
-    const body = await request.json();
-    
-    // Remove any attempt to update sensitive fields
-    const {
-      clerkId, // Cannot change the clerk association
-      email, // Email is managed by Clerk
-      role, // Only admins can change roles (should be handled separately)
-      ...updateData
-    } = body;
-    
-    await connectToDB();
+  const { id } = params;
+  const body = await request.json();
 
-    // Find the user and update
-    const updatedUser = await User.findByIdAndUpdate(
-      id,
-      { $set: updateData },
-      { new: true, runValidators: true }
-    ).select('-__v');
+  // Disallow sensitive field updates
+  const { id: userId, email, role, ...updateData } = body;
 
-    if (!updatedUser) {
-      return NextResponse.json(
-        { message: "User not found" },
-        { status: 404 }
-      );
-    }
+  const { data: updatedUser, error } = await supabase
+    .from("users")
+    .update(updateData)
+    .eq("id", id)
+    .select()
+    .single();
 
-    return NextResponse.json({ user: updatedUser }, { status: 200 });
-  } catch (error) {
+  if (error) {
     console.error("Error updating user:", error);
     return NextResponse.json(
       { message: "Failed to update user" },
       { status: 500 }
     );
   }
+
+  return NextResponse.json({ user: updatedUser }, { status: 200 });
 }
 
-// DELETE: Delete user by ID (Admin only)
+// DELETE: Delete user by ID
 export async function DELETE(request, { params }) {
-  try {
-    const { id } = params;
-    
-    await connectToDB();
+  const { uid } = params;
 
-    // First, find the user to get their clerkId
-    const user = await User.findById(id);
-    
-    if (!user) {
-      return NextResponse.json(
-        { message: "User not found" },
-        { status: 404 }
-      );
-    }
-    
-    // Delete from our database
-    await User.findByIdAndDelete(id);
-    
-    // If the user has a clerkId, also delete from Clerk
-    if (user.clerkId) {
-      try {
-        await clerkClient.users.deleteUser(user.clerkId);
-      } catch (clerkError) {
-        console.error("Error deleting user from Clerk:", clerkError);
-        // Continue with the process even if Clerk deletion fails
-      }
-    }
+  // First fetch the user to get their Supabase Auth ID
+  const { data: user, error: fetchError } = await supabase
+    .from("users")
+    .select("*")
+    .eq("uid", uid)
+    .single();
 
-    return NextResponse.json(
-      { message: "User deleted successfully" },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Error deleting user:", error);
+  if (fetchError) {
+    console.error("Error fetching user:", fetchError);
+    return NextResponse.json({ message: "User not found" }, { status: 404 });
+  }
+
+  // Delete user from database
+  const { error: deleteError } = await supabase
+    .from("users")
+    .delete()
+    .eq("uid", uid);
+
+  if (deleteError) {
+    console.error("Error deleting user:", deleteError);
     return NextResponse.json(
       { message: "Failed to delete user" },
       { status: 500 }
     );
   }
-} 
+
+  // Delete user from Supabase Auth (if auth_id exists)
+  if (user.auth_id) {
+    const { error: authDeleteError } = await supabase.auth.admin.deleteUser(
+      user.auth_id
+    );
+    if (authDeleteError) {
+      console.error("Error deleting user from Supabase Auth:", authDeleteError);
+      // Proceed even if auth deletion fails
+    }
+  }
+
+  return NextResponse.json(
+    { message: "User deleted successfully" },
+    { status: 200 }
+  );
+}

@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth } from "@/lib/auth-context";
 import {
   Users,
   BookOpen,
@@ -34,6 +35,13 @@ import {
   HelpCircle,
   Database,
   ChevronRight,
+  CalendarDays,
+  PlusCircle,
+  Building,
+  Bell,
+  ArrowUpRight,
+  LineChart,
+  Presentation,
 } from "lucide-react";
 import {
   Card,
@@ -41,6 +49,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
 import {
@@ -85,10 +94,11 @@ import {
   TabsList,
   TabsTrigger,
 } from "../../../components/ui/tabs";
+import { Label } from "../../../components/ui/label";
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const { userId, isLoaded } = useAuth();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
@@ -142,7 +152,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        if (!isLoaded || !userId) return;
+        if (!user) return;
 
         setIsLoading(true);
 
@@ -359,7 +369,7 @@ export default function AdminDashboard() {
     };
 
     fetchDashboardData();
-  }, [userId, isLoaded, router]);
+  }, [user, router]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -511,288 +521,582 @@ export default function AdminDashboard() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
+    <div className="container py-8">
+      {/* Welcome Header */}
+      <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold">Admin Dashboard</h1>
+          <p className="text-slate-600 dark:text-slate-400 mt-1">
+            Manage your platform, users, and courses
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <Link href="/dashboard/admin/users/new">
+            <Button className="flex items-center gap-2">
+              <UserPlus className="h-4 w-4" />
+              <span>Add User</span>
+            </Button>
+          </Link>
+          <Link href="/dashboard/admin/reports">
+            <Button variant="outline" className="flex items-center gap-2">
+              <FileSpreadsheet className="h-4 w-4" />
+              <span>Reports</span>
+            </Button>
+          </Link>
+        </div>
+      </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center">
-            <div className="bg-blue-100 p-3 rounded-full">
-              <Users className="h-6 w-6 text-blue-600" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <Card className="border-0 shadow-md hover:shadow-lg transition-all bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded-full">
+              <Users className="h-4 w-4 text-blue-600 dark:text-blue-300" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm text-gray-500">Total Users</p>
-              <h3 className="text-2xl font-bold">{dashboardData.totalUsers}</h3>
-            </div>
-          </div>
-        </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{dashboardData.totalUsers}</div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              <TrendingUp className="inline h-3 w-3 mr-1" />
+              {dashboardData.usersByRole.student} students,{" "}
+              {dashboardData.usersByRole.lecturer} lecturers
+            </p>
+          </CardContent>
+        </Card>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center">
-            <div className="bg-green-100 p-3 rounded-full">
-              <BookOpen className="h-6 w-6 text-green-600" />
+        <Card className="border-0 shadow-md hover:shadow-lg transition-all bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
+            <div className="bg-green-100 dark:bg-green-800 p-2 rounded-full">
+              <BookOpen className="h-4 w-4 text-green-600 dark:text-green-300" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm text-gray-500">Total Courses</p>
-              <h3 className="text-2xl font-bold">
-                {dashboardData.totalCourses}
-              </h3>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">
+              {dashboardData.totalCourses}
             </div>
-          </div>
-        </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              <TrendingUp className="inline h-3 w-3 mr-1" />5 new this month
+            </p>
+          </CardContent>
+        </Card>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center">
-            <div className="bg-yellow-100 p-3 rounded-full">
-              <DollarSign className="h-6 w-6 text-yellow-600" />
+        <Card className="border-0 shadow-md hover:shadow-lg transition-all bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <div className="bg-purple-100 dark:bg-purple-800 p-2 rounded-full">
+              <DollarSign className="h-4 w-4 text-purple-600 dark:text-purple-300" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm text-gray-500">Total Revenue</p>
-              <h3 className="text-2xl font-bold">
-                {formatCurrency(dashboardData.totalRevenue)}
-              </h3>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">
+              ${dashboardData.totalRevenue.toLocaleString()}
             </div>
-          </div>
-        </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              <TrendingUp className="inline h-3 w-3 mr-1" />$
+              {(dashboardData.totalRevenue * 0.1).toLocaleString()} this month
+            </p>
+          </CardContent>
+        </Card>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center">
-            <div className="bg-purple-100 p-3 rounded-full">
-              <GraduationCap className="h-6 w-6 text-purple-600" />
+        <Card className="border-0 shadow-md hover:shadow-lg transition-all bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Enrollments
+            </CardTitle>
+            <div className="bg-amber-100 dark:bg-amber-800 p-2 rounded-full">
+              <GraduationCap className="h-4 w-4 text-amber-600 dark:text-amber-300" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm text-gray-500">Total Enrollments</p>
-              <h3 className="text-2xl font-bold">
-                {dashboardData.totalEnrollments}
-              </h3>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">
+              {dashboardData.totalEnrollments}
             </div>
-          </div>
-        </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              <TrendingUp className="inline h-3 w-3 mr-1" />
+              32 new enrollments this week
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Users */}
-        <div className="bg-white rounded-lg shadow-md p-6 lg:col-span-1">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Recent Users</h2>
-            <Link
-              href="/dashboard/admin/users"
-              className="text-blue-600 hover:underline text-sm flex items-center"
-            >
-              View All <ChevronRight className="h-4 w-4 ml-1" />
-            </Link>
+      {/* Main Dashboard Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        {/* Left Column - Users & Courses */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Users Management */}
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">User Management</h2>
+              <Link href="/dashboard/admin/users">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-1"
+                >
+                  View all <ChevronRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+
+            <Card className="border-0 shadow-md">
+              <CardContent className="p-4">
+                <div className="flex flex-col md:flex-row justify-between md:items-center mb-4 gap-4">
+                  <div className="relative w-full md:w-64">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-400" />
+                    <Input
+                      placeholder="Search users..."
+                      className="pl-8"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center"
+                        >
+                          Filter:{" "}
+                          {filterRole === "all" ? "All Roles" : filterRole}
+                          <ChevronDown className="ml-2 h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Filter by role</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => setFilterRole("all")}>
+                          {filterRole === "all" && (
+                            <Check className="mr-2 h-4 w-4" />
+                          )}
+                          All Roles
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setFilterRole("student")}
+                        >
+                          {filterRole === "student" && (
+                            <Check className="mr-2 h-4 w-4" />
+                          )}
+                          Student
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setFilterRole("lecturer")}
+                        >
+                          {filterRole === "lecturer" && (
+                            <Check className="mr-2 h-4 w-4" />
+                          )}
+                          Lecturer
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setFilterRole("admin")}
+                        >
+                          {filterRole === "admin" && (
+                            <Check className="mr-2 h-4 w-4" />
+                          )}
+                          Admin
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Link href="/dashboard/admin/users/new">
+                      <Button size="sm" className="flex items-center gap-1">
+                        <UserPlus className="h-4 w-4" />
+                        Add User
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead>Joined</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {dashboardData.recentUsers.length > 0 ? (
+                        dashboardData.recentUsers.map((user) => (
+                          <TableRow
+                            key={user.id}
+                            className="hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                          >
+                            <TableCell className="font-medium">
+                              {user.name}
+                            </TableCell>
+                            <TableCell>{user.email}</TableCell>
+                            <TableCell>
+                              <Badge
+                                className={`${
+                                  user.role === "admin"
+                                    ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300"
+                                    : user.role === "lecturer"
+                                    ? "bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300"
+                                    : "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300"
+                                }`}
+                              >
+                                {user.role}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{formatDate(user.joinDate)}</TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleUserEdit(user)}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleUserDelete(user.id)}
+                                  className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                                >
+                                  <Trash className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell
+                            colSpan={5}
+                            className="text-center py-6 text-slate-500"
+                          >
+                            No users found.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-          <div className="space-y-4">
-            {dashboardData.recentUsers.map((user) => (
-              <div
-                key={user.id}
-                className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-md"
-              >
-                <div>
-                  <h3 className="font-medium">{user.name}</h3>
-                  <p className="text-sm text-gray-500">{user.email}</p>
-                </div>
-                <div className="text-right">
-                  <span
-                    className={`px-2.5 py-0.5 rounded-full text-xs ${
-                      user.role === "admin"
-                        ? "bg-purple-100 text-purple-800"
-                        : user.role === "lecturer"
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-green-100 text-green-800"
-                    }`}
-                  >
-                    {user.role}
-                  </span>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {formatDate(user.joinDate)}
-                  </p>
-                </div>
-              </div>
-            ))}
+
+          {/* Popular Courses */}
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Popular Courses</h2>
+              <Link href="/dashboard/admin/courses">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-1"
+                >
+                  View all <ChevronRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+
+            <Card className="border-0 shadow-md">
+              <CardContent className="p-4">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Course</TableHead>
+                      <TableHead>Instructor</TableHead>
+                      <TableHead>Enrollments</TableHead>
+                      <TableHead>Rating</TableHead>
+                      <TableHead className="text-right">Revenue</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {dashboardData.popularCourses.length > 0 ? (
+                      dashboardData.popularCourses.map((course) => (
+                        <TableRow
+                          key={course.id}
+                          className="hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                        >
+                          <TableCell className="font-medium">
+                            <Link
+                              href={`/dashboard/admin/courses/${course.id}`}
+                              className="hover:text-blue-600"
+                            >
+                              {course.title}
+                            </Link>
+                          </TableCell>
+                          <TableCell>{course.instructor}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center">
+                              <Users className="h-4 w-4 mr-1 text-slate-400" />
+                              {course.enrollments}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center">
+                              <span className="mr-1">{course.rating}</span>
+                              <Star className="h-4 w-4 text-amber-500 fill-current" />
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            ${formatCurrency(course.revenue)}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell
+                          colSpan={5}
+                          className="text-center py-6 text-slate-500"
+                        >
+                          No courses found.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
-        {/* Popular Courses */}
-        <div className="bg-white rounded-lg shadow-md p-6 lg:col-span-2">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Popular Courses</h2>
-            <Link
-              href="/dashboard/admin/courses"
-              className="text-blue-600 hover:underline text-sm flex items-center"
-            >
-              View All <ChevronRight className="h-4 w-4 ml-1" />
-            </Link>
+        {/* Right Column - Analytics & Activity */}
+        <div className="space-y-8">
+          {/* User Analytics */}
+          <div>
+            <h2 className="text-2xl font-bold mb-4">User Distribution</h2>
+            <Card className="border-0 shadow-md">
+              <CardContent className="p-4">
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center">
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {dashboardData.usersByRole.student}
+                    </p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      Students
+                    </p>
+                  </div>
+                  <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-center">
+                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                      {dashboardData.usersByRole.lecturer}
+                    </p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      Lecturers
+                    </p>
+                  </div>
+                  <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg text-center">
+                    <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+                      {dashboardData.usersByRole.admin}
+                    </p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      Admins
+                    </p>
+                  </div>
+                </div>
+
+                {/* Placeholder for user distribution chart */}
+                <div className="h-48 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                  <div className="text-center">
+                    <BarChart className="h-10 w-10 text-slate-400 mx-auto mb-2" />
+                    <p className="text-sm text-slate-500">
+                      User Distribution Chart
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="bg-slate-50 dark:bg-slate-800 p-4">
+                <Link
+                  href="/dashboard/admin/analytics/users"
+                  className="text-blue-600 hover:underline text-sm flex items-center mx-auto"
+                >
+                  View detailed analytics{" "}
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </CardFooter>
+            </Card>
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Course
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Instructor
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Enrollments
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Rating
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Revenue
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {dashboardData.popularCourses.map((course) => (
-                  <tr key={course.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {course.title}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {course.instructor}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {course.enrollments}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex items-center">
-                        <Star className="h-4 w-4 text-yellow-400 mr-1" />
-                        {course.rating.toFixed(1)}
+
+          {/* Recent Activity */}
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Recent Enrollments</h2>
+            <Card className="border-0 shadow-md">
+              <CardContent className="p-4">
+                {dashboardData.recentEnrollments.length > 0 ? (
+                  <div className="space-y-4">
+                    {dashboardData.recentEnrollments.map((enrollment) => (
+                      <div
+                        key={enrollment.id}
+                        className="flex items-start gap-3"
+                      >
+                        <div className="bg-green-100 dark:bg-green-900/20 p-2 rounded-full">
+                          <ShoppingCart className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium">{enrollment.user}</p>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
+                            Enrolled in{" "}
+                            <span className="font-medium">
+                              {enrollment.course}
+                            </span>
+                          </p>
+                          <p className="text-xs text-slate-500 mt-1">
+                            {formatDate(enrollment.date)}
+                          </p>
+                        </div>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatCurrency(course.revenue)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* User Distribution */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">User Distribution</h2>
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-sm font-medium">Students</span>
-                <span className="text-sm text-gray-500">
-                  {Math.round(
-                    (dashboardData.usersByRole.student /
-                      dashboardData.totalUsers) *
-                      100
-                  )}
-                  %
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-green-600 h-2 rounded-full"
-                  style={{
-                    width: `${
-                      (dashboardData.usersByRole.student /
-                        dashboardData.totalUsers) *
-                      100
-                    }%`,
-                  }}
-                />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-sm font-medium">Lecturers</span>
-                <span className="text-sm text-gray-500">
-                  {Math.round(
-                    (dashboardData.usersByRole.lecturer /
-                      dashboardData.totalUsers) *
-                      100
-                  )}
-                  %
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-blue-600 h-2 rounded-full"
-                  style={{
-                    width: `${
-                      (dashboardData.usersByRole.lecturer /
-                        dashboardData.totalUsers) *
-                      100
-                    }%`,
-                  }}
-                />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-sm font-medium">Admins</span>
-                <span className="text-sm text-gray-500">
-                  {Math.round(
-                    (dashboardData.usersByRole.admin /
-                      dashboardData.totalUsers) *
-                      100
-                  )}
-                  %
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-purple-600 h-2 rounded-full"
-                  style={{
-                    width: `${
-                      (dashboardData.usersByRole.admin /
-                        dashboardData.totalUsers) *
-                      100
-                    }%`,
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Enrollments */}
-        <div className="bg-white rounded-lg shadow-md p-6 lg:col-span-2">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Recent Enrollments</h2>
-            <Link
-              href="/dashboard/admin/enrollments"
-              className="text-blue-600 hover:underline text-sm flex items-center"
-            >
-              View All <ChevronRight className="h-4 w-4 ml-1" />
-            </Link>
-          </div>
-          <div className="space-y-3">
-            {dashboardData.recentEnrollments.map((enrollment) => (
-              <div
-                key={enrollment.id}
-                className="flex justify-between items-center p-3 border-b border-gray-100 last:border-0"
-              >
-                <div>
-                  <h3 className="font-medium">{enrollment.user}</h3>
-                  <p className="text-sm text-gray-500">
-                    enrolled in {enrollment.course}
-                  </p>
-                </div>
-                <div className="text-sm text-gray-500">
-                  {formatDate(enrollment.date)}
-                </div>
-              </div>
-            ))}
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <ShoppingCart className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                    <p className="text-slate-500">No recent enrollments</p>
+                  </div>
+                )}
+              </CardContent>
+              <CardFooter className="bg-slate-50 dark:bg-slate-800 p-4">
+                <Link
+                  href="/dashboard/admin/enrollments"
+                  className="text-blue-600 hover:underline text-sm flex items-center mx-auto"
+                >
+                  View all enrollments <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </CardFooter>
+            </Card>
           </div>
         </div>
       </div>
+
+      {/* Platform Analytics */}
+      <div>
+        <h2 className="text-2xl font-bold mb-4">Platform Analytics</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Monthly Revenue */}
+          <Card className="border-0 shadow-md">
+            <CardHeader>
+              <CardTitle>Monthly Revenue</CardTitle>
+              <CardDescription>
+                Revenue generated across the platform in the last 6 months
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {/* Placeholder for monthly revenue chart */}
+              <div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                <div className="text-center">
+                  <LineChart className="h-10 w-10 text-slate-400 mx-auto mb-2" />
+                  <p className="text-sm text-slate-500">
+                    Monthly Revenue Chart
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* User Growth */}
+          <Card className="border-0 shadow-md">
+            <CardHeader>
+              <CardTitle>User Growth</CardTitle>
+              <CardDescription>
+                New user registrations over the last 6 months
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {/* Placeholder for user growth chart */}
+              <div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                <div className="text-center">
+                  <TrendingUp className="h-10 w-10 text-slate-400 mx-auto mb-2" />
+                  <p className="text-sm text-slate-500">User Growth Chart</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* User and Delete Dialogs */}
+      <Dialog open={showUserDialog} onOpenChange={setShowUserDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>
+              Make changes to the user's details here. Click save when you're
+              done.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="name"
+                value={userToEdit?.name}
+                onChange={(e) =>
+                  setUserToEdit({ ...userToEdit, name: e.target.value })
+                }
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="email" className="text-right">
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={userToEdit?.email}
+                onChange={(e) =>
+                  setUserToEdit({ ...userToEdit, email: e.target.value })
+                }
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="role" className="text-right">
+                Role
+              </Label>
+              <Input
+                id="role"
+                value={userToEdit?.role}
+                onChange={(e) =>
+                  setUserToEdit({ ...userToEdit, role: e.target.value })
+                }
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="submit" onClick={() => handleUserSave(userToEdit)}>
+              Save changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={confirmDelete !== null}
+        onOpenChange={() => setConfirmDelete(null)}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>
+              Are you sure you want to delete this user?
+            </DialogTitle>
+            <DialogDescription>This action cannot be undone.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button type="submit" onClick={confirmUserDelete}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

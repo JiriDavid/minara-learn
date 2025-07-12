@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth } from "@/lib/auth-context";
 import {
   PlusCircle,
   Search,
@@ -19,6 +19,7 @@ import {
   Plus,
   Users,
   Clock,
+  Filter,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -55,15 +56,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function CourseManagement() {
   const { userId, isLoaded } = useAuth();
@@ -102,13 +101,15 @@ export default function CourseManagement() {
           throw new Error("Failed to fetch courses");
         }
 
-        setCourses(coursesData.data || []);
+        const courseData = coursesData.data || [];
+        setCourses(courseData);
+        setFilteredCourses(courseData);
 
         // If we don't have API data yet, fall back to mock data
         if (!coursesData.data || coursesData.data.length === 0) {
           // Mock course data for development
           setTimeout(() => {
-            setCourses([
+            const mockCourses = [
               {
                 _id: "1",
                 title: "Complete JavaScript Course 2023",
@@ -169,7 +170,9 @@ export default function CourseManagement() {
                 createdAt: "2023-07-15T00:00:00.000Z",
                 updatedAt: "2023-07-30T00:00:00.000Z",
               },
-            ]);
+            ];
+            setCourses(mockCourses);
+            setFilteredCourses(mockCourses);
             setIsLoading(false);
           }, 1000);
         } else {
@@ -184,18 +187,22 @@ export default function CourseManagement() {
     fetchCourses();
   }, [userId, isLoaded, router]);
 
-  // Filter courses based on search term and status filter
-  const filteredCourses = courses.filter((course) => {
-    const matchesSearch = course.title
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const matchesFilter =
-      filterStatus === "all" ||
-      (filterStatus === "published" && course.isPublished) ||
-      (filterStatus === "draft" && !course.isPublished);
+  // Update filtered courses when search term or filter status changes
+  useEffect(() => {
+    const filtered = courses.filter((course) => {
+      const matchesSearch = course.title
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const matchesFilter =
+        filterStatus === "all" ||
+        (filterStatus === "published" && course.isPublished) ||
+        (filterStatus === "draft" && !course.isPublished);
 
-    return matchesSearch && matchesFilter;
-  });
+      return matchesSearch && matchesFilter;
+    });
+
+    setFilteredCourses(filtered);
+  }, [searchTerm, filterStatus, courses]);
 
   const handleDelete = async (courseId) => {
     // In production, this would show a confirmation dialog
@@ -450,27 +457,32 @@ export default function CourseManagement() {
       )}
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Are you sure?</DialogTitle>
+            <DialogDescription>
               This will permanently delete the course &quot;
               {courseToDelete?.title}&quot; and all associated content. This
               action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
               onClick={() => handleDelete(courseToDelete._id)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -7,18 +7,19 @@ import { formatPrice, truncateText, convertMinutesToHours } from "@/lib/utils";
 
 const CourseCard = ({ course }) => {
   const {
-    _id,
+    id,
     title,
     slug,
     thumbnail,
     price,
     ratings,
-    numReviews,
-    duration,
+    lecturer,
+    totalDuration,
+    totalLessons,
     level,
     category,
-    lecturerId,
     discount = 0,
+    enrollmentCount,
   } = course;
 
   const discountedPrice =
@@ -56,7 +57,7 @@ const CourseCard = ({ course }) => {
         <div className="flex items-center text-sm text-slate-600 dark:text-slate-400 space-x-3 mb-3">
           <div className="flex items-center">
             <Clock className="h-4 w-4 mr-1" />
-            <span>{convertMinutesToHours(duration)}</span>
+            <span>{convertMinutesToHours(totalDuration)}</span>
           </div>
           <div className="flex items-center">
             <BarChart className="h-4 w-4 mr-1" />
@@ -67,12 +68,18 @@ const CourseCard = ({ course }) => {
         <div className="flex items-center mb-4 text-sm">
           <div className="flex items-center text-amber-500">
             <Star className="h-4 w-4 fill-current" />
-            <span className="ml-1 mr-2">{ratings || 0}</span>
+            <span className="ml-1 mr-2">{ratings?.average || "New"}</span>
           </div>
           <span className="text-slate-500 dark:text-slate-400">
-            ({numReviews || 0} reviews)
+            ({ratings?.count || 0} reviews)
           </span>
         </div>
+
+        {lecturer && (
+          <div className="text-sm text-slate-500 dark:text-slate-400">
+            <span>By {lecturer.name}</span>
+          </div>
+        )}
       </CardContent>
 
       <CardFooter className="border-t p-4 flex justify-between items-center">

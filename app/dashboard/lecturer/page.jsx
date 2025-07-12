@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth } from "@/lib/auth-context";
 import {
   Users,
   BookOpen,
@@ -18,6 +19,13 @@ import {
   Eye,
   Plus,
   Activity,
+  CalendarDays,
+  MessageSquare,
+  ChevronRight,
+  BookMarked,
+  Pencil,
+  Settings,
+  ListChecks,
 } from "lucide-react";
 import {
   Card,
@@ -29,6 +37,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import {
   Table,
   TableBody,
@@ -40,7 +49,7 @@ import {
 
 export default function LecturerDashboard() {
   const router = useRouter();
-  const { userId, isLoaded } = useAuth();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState({
     totalCourses: 0,
@@ -51,6 +60,8 @@ export default function LecturerDashboard() {
     recentEnrollments: [],
     topCourses: [],
     recentReviews: [],
+    pendingTasks: [],
+    upcomingSchedule: [],
   });
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -66,7 +77,7 @@ export default function LecturerDashboard() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        if (!isLoaded || !userId) return;
+        if (!user) return;
 
         setIsLoading(true);
 
@@ -117,6 +128,58 @@ export default function LecturerDashboard() {
             revenue: course.revenue || 0,
           })),
           recentReviews: stats.recentReviews || [],
+          pendingTasks: [
+            {
+              id: "task1",
+              title: "Grade JavaScript Projects",
+              dueDate: "2023-10-18T00:00:00.000Z",
+              course: "JavaScript Fundamentals",
+              pendingCount: 5,
+              priority: "high",
+            },
+            {
+              id: "task2",
+              title: "Review React Assignment Submissions",
+              dueDate: "2023-10-20T00:00:00.000Z",
+              course: "React - The Complete Guide",
+              pendingCount: 8,
+              priority: "medium",
+            },
+            {
+              id: "task3",
+              title: "Update Node.js Course Materials",
+              dueDate: "2023-10-25T00:00:00.000Z",
+              course: "Node.js API Masterclass",
+              pendingCount: 1,
+              priority: "low",
+            },
+          ],
+          upcomingSchedule: [
+            {
+              id: "event1",
+              title: "Live Q&A Session",
+              date: "2023-10-19T15:00:00.000Z",
+              course: "JavaScript Fundamentals",
+              type: "webinar",
+              attendees: 28,
+            },
+            {
+              id: "event2",
+              title: "Office Hours",
+              date: "2023-10-21T13:00:00.000Z",
+              course: "React - The Complete Guide",
+              type: "meeting",
+              attendees: 5,
+            },
+            {
+              id: "event3",
+              title: "Project Review Session",
+              date: "2023-10-22T14:00:00.000Z",
+              course: "Node.js API Masterclass",
+              type: "workshop",
+              attendees: 12,
+            },
+          ],
         };
 
         setDashboardData(dashboardData);
@@ -153,34 +216,17 @@ export default function LecturerDashboard() {
           setLoading(false);
         }
       } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-
-        // Fall back to mock data on error
-        setTimeout(() => {
-          // Use the existing mock data setup
-          setStats({
-            totalCourses: 8,
-            publishedCourses: 5,
-            draftCourses: 3,
-            totalStudents: 342,
-            totalHours: 47,
-            averageRating: 4.7,
-          });
-
-          // Keep the existing mock courses
-          setLoading(false);
-        }, 1000);
-      } finally {
+        console.error("Error fetching lecturer dashboard data:", error);
         setIsLoading(false);
       }
     };
 
     fetchDashboardData();
-  }, [userId, isLoaded, router]);
+  }, [user, router]);
 
-  if (!isLoaded || isLoading) {
+  if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex justify-center items-center min-h-screen">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600"></div>
       </div>
     );
@@ -192,349 +238,493 @@ export default function LecturerDashboard() {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
+  const formatDateTime = (dateString) => {
+    return new Date(dateString).toLocaleString(undefined, {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   return (
     <div className="container py-8">
-      <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
+      {/* Welcome Section */}
+      <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-            Lecturer Dashboard
+          <h1 className="text-3xl md:text-4xl font-bold">
+            Welcome back, {user?.displayName || "Instructor"}
           </h1>
-          <p className="mt-1 text-slate-600 dark:text-slate-400">
-            Manage your courses and view performance metrics
+          <p className="text-slate-600 dark:text-slate-400 mt-1">
+            Manage your courses and track student progress
           </p>
         </div>
-        <Button
-          className="mt-4 md:mt-0"
-          onClick={() => router.push("/dashboard/lecturer/courses/create")}
-        >
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Create New Course
-        </Button>
-      </div>
-
-      {/* Stats Overview */}
-      <div className="grid gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center p-6">
-            <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900">
-              <BookOpen className="h-8 w-8 text-blue-600 dark:text-blue-300" />
-            </div>
-            <h3 className="mt-4 text-3xl font-bold text-slate-900 dark:text-white">
-              {dashboardData.totalCourses}
-            </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Total Courses
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center p-6">
-            <div className="rounded-full bg-green-100 p-3 dark:bg-green-900">
-              <Users className="h-8 w-8 text-green-600 dark:text-green-300" />
-            </div>
-            <h3 className="mt-4 text-3xl font-bold text-slate-900 dark:text-white">
-              {dashboardData.totalStudents}
-            </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Total Students
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center p-6">
-            <div className="rounded-full bg-purple-100 p-3 dark:bg-purple-900">
-              <TrendingUp className="h-8 w-8 text-purple-600 dark:text-purple-300" />
-            </div>
-            <h3 className="mt-4 text-3xl font-bold text-slate-900 dark:text-white">
-              ${dashboardData.totalRevenue.toLocaleString()}
-            </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Total Revenue
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center p-6">
-            <div className="rounded-full bg-amber-100 p-3 dark:bg-amber-900">
-              <Star className="h-8 w-8 text-amber-600 dark:text-amber-300" />
-            </div>
-            <h3 className="mt-4 text-3xl font-bold text-slate-900 dark:text-white">
-              {dashboardData.averageRating}
-            </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Average Rating
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Top Courses */}
-      <div className="mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">Top Performing Courses</CardTitle>
-            <CardDescription>
-              Your most successful courses based on enrollment and ratings
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {dashboardData.topCourses.map((course) => (
-                <div
-                  key={course.id}
-                  className="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-4"
-                >
-                  <div className="mb-2 md:mb-0">
-                    <h4 className="text-base font-medium text-slate-900 dark:text-white">
-                      {course.title}
-                    </h4>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      <span className="flex items-center text-sm text-slate-600 dark:text-slate-400">
-                        <Users className="mr-1 h-4 w-4" />
-                        {course.students} students
-                      </span>
-                      <span className="flex items-center text-sm text-slate-600 dark:text-slate-400">
-                        <Star className="mr-1 h-4 w-4 text-amber-500" />
-                        {course.rating}
-                      </span>
-                      <span className="flex items-center text-sm text-slate-600 dark:text-slate-400">
-                        <TrendingUp className="mr-1 h-4 w-4 text-green-500" />$
-                        {course.revenue}
-                      </span>
-                    </div>
-                  </div>
-                  <Link
-                    href={`/dashboard/lecturer/courses/${course.id}`}
-                    className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                  >
-                    View Details
-                  </Link>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button variant="outline" className="w-full" asChild>
-              <Link href="/dashboard/lecturer/courses">View All Courses</Link>
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Recent Enrollments */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">Recent Enrollments</CardTitle>
-            <CardDescription>
-              Latest students who enrolled in your courses
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {dashboardData.recentEnrollments.map((enrollment) => (
-                <div
-                  key={enrollment.id}
-                  className="flex justify-between border-b border-slate-200 dark:border-slate-700 pb-3"
-                >
-                  <div>
-                    <p className="font-medium text-slate-900 dark:text-white">
-                      {enrollment.studentName}
-                    </p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
-                      {enrollment.courseName}
-                    </p>
-                  </div>
-                  <div className="text-sm text-slate-500 dark:text-slate-500">
-                    {new Date(enrollment.date).toLocaleDateString()}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Reviews */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">Recent Reviews</CardTitle>
-            <CardDescription>
-              Latest feedback from your students
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {dashboardData.recentReviews.map((review) => (
-                <div
-                  key={review.id}
-                  className="border-b border-slate-200 dark:border-slate-700 pb-3"
-                >
-                  <div className="flex justify-between items-start mb-1">
-                    <p className="font-medium text-slate-900 dark:text-white">
-                      {review.studentName}
-                    </p>
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-4 w-4 ${
-                            i < review.rating
-                              ? "text-amber-500 fill-amber-500"
-                              : "text-slate-300 dark:text-slate-600"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">
-                    {review.courseName}
-                  </p>
-                  <p className="text-sm text-slate-800 dark:text-slate-300">
-                    "{review.comment}"
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
-                    {new Date(review.date).toLocaleDateString()}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Courses Table */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Your Courses</h2>
-          <Link href="/dashboard/lecturer/courses">
-            <Button variant="outline" size="sm">
-              View All
+        <div className="flex gap-3">
+          <Link href="/dashboard/lecturer/courses/create">
+            <Button className="flex items-center gap-2">
+              <PlusCircle className="h-4 w-4" />
+              <span>Create New Course</span>
             </Button>
           </Link>
         </div>
+      </div>
 
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Course</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Students</TableHead>
-                  <TableHead>Lessons</TableHead>
-                  <TableHead>Rating</TableHead>
-                  <TableHead>Last Updated</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {courses.map((course) => (
-                  <TableRow key={course.id}>
-                    <TableCell className="font-medium">
-                      {course.title}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          course.status === "published"
-                            ? "success"
-                            : "secondary"
+      {/* Stats Overview with Improved Styling */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <Card className="border-0 shadow-md hover:shadow-lg transition-all bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
+            <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded-full">
+              <BookOpen className="h-4 w-4 text-blue-600 dark:text-blue-300" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">
+              {dashboardData.totalCourses}
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              {stats.publishedCourses} published, {stats.draftCourses} draft
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-md hover:shadow-lg transition-all bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Students
+            </CardTitle>
+            <div className="bg-green-100 dark:bg-green-800 p-2 rounded-full">
+              <Users className="h-4 w-4 text-green-600 dark:text-green-300" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">
+              {dashboardData.totalStudents}
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              <TrendingUp className="inline h-3 w-3 mr-1" />
+              12 new this week
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-md hover:shadow-lg transition-all bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <div className="bg-purple-100 dark:bg-purple-800 p-2 rounded-full">
+              <Activity className="h-4 w-4 text-purple-600 dark:text-purple-300" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">
+              ${dashboardData.totalRevenue.toLocaleString()}
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              <TrendingUp className="inline h-3 w-3 mr-1" />
+              $1,200 this month
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-md hover:shadow-lg transition-all bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Average Rating
+            </CardTitle>
+            <div className="bg-amber-100 dark:bg-amber-800 p-2 rounded-full">
+              <Star className="h-4 w-4 text-amber-600 dark:text-amber-300" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">
+              {dashboardData.averageRating.toFixed(1)}
+            </div>
+            <div className="flex mt-1 text-amber-500">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  className={`h-3 w-3 ${
+                    star <= Math.round(dashboardData.averageRating)
+                      ? "fill-current"
+                      : "text-slate-300"
+                  }`}
+                />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Dashboard Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column - Course Management & Analytics */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Your Courses */}
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Your Courses</h2>
+              <Link href="/dashboard/lecturer/courses">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-1"
+                >
+                  View all <ChevronRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+
+            <div className="space-y-4">
+              {courses.slice(0, 3).map((course) => (
+                <Card
+                  key={course._id || course.id}
+                  className="border-0 shadow-md overflow-hidden"
+                >
+                  <div className="flex flex-col md:flex-row">
+                    <div className="relative h-48 md:h-auto md:w-1/3 lg:w-1/4">
+                      <Image
+                        src={
+                          course.thumbnail || "/images/course-placeholder.jpg"
                         }
-                      >
-                        {course.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{course.students}</TableCell>
-                    <TableCell>{course.lessons}</TableCell>
-                    <TableCell>
-                      {course.rating > 0 ? `${course.rating}/5.0` : "N/A"}
-                    </TableCell>
-                    <TableCell>{formatDate(course.lastUpdated)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end space-x-2">
-                        <Link href={`/learn/${course.slug}`}>
-                          <Button variant="ghost" size="sm">
-                            <Eye className="h-4 w-4 mr-1" />
+                        alt={course.title}
+                        fill
+                        className="object-cover"
+                      />
+                      {course.isPublished ? (
+                        <Badge className="absolute top-2 right-2 bg-green-500">
+                          Published
+                        </Badge>
+                      ) : (
+                        <Badge className="absolute top-2 right-2 bg-amber-500">
+                          Draft
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="p-4 md:w-2/3 lg:w-3/4 flex flex-col justify-between">
+                      <div>
+                        <div className="flex justify-between items-start">
+                          <h3 className="font-bold text-lg mb-1">
+                            {course.title}
+                          </h3>
+                          <div className="flex items-center text-sm">
+                            <Star className="h-4 w-4 text-amber-500 fill-current" />
+                            <span className="ml-1 mr-2">
+                              {course.averageRating || course.rating || "New"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          <div className="text-xs flex items-center gap-1 text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-300 px-2 py-1 rounded-full">
+                            <Users className="h-3 w-3" />
+                            <span>
+                              {course.enrollmentCount || "0"} students
+                            </span>
+                          </div>
+                          <div className="text-xs flex items-center gap-1 text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-300 px-2 py-1 rounded-full">
+                            <Clock className="h-3 w-3" />
+                            <span>{course.totalLessons || "0"} lessons</span>
+                          </div>
+                          <div className="text-xs flex items-center gap-1 text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-300 px-2 py-1 rounded-full">
+                            <FileText className="h-3 w-3" />
+                            <span>${course.price || "0"}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 flex flex-wrap items-center gap-2">
+                        <Link
+                          href={`/dashboard/lecturer/courses/${
+                            course._id || course.id
+                          }`}
+                        >
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex items-center gap-1"
+                          >
+                            <Eye className="h-3 w-3" />
                             View
                           </Button>
                         </Link>
                         <Link
-                          href={`/dashboard/lecturer/courses/${course.id}/edit`}
+                          href={`/dashboard/lecturer/courses/${
+                            course._id || course.id
+                          }/edit`}
                         >
-                          <Button variant="outline" size="sm">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex items-center gap-1"
+                          >
+                            <Pencil className="h-3 w-3" />
                             Edit
                           </Button>
                         </Link>
+                        <Link
+                          href={`/dashboard/lecturer/courses/${
+                            course._id || course.id
+                          }/analytics`}
+                        >
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex items-center gap-1"
+                          >
+                            <BarChart3 className="h-3 w-3" />
+                            Analytics
+                          </Button>
+                        </Link>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
 
-      {/* Quick Actions */}
-      <div>
-        <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Link href="/dashboard/lecturer/courses/create">
-            <Card className="cursor-pointer hover:bg-muted/50 transition-colors">
-              <CardContent className="pt-6">
-                <div className="flex items-center space-x-4">
-                  <div className="p-2 bg-primary/10 rounded-full">
-                    <PlusCircle className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium">Create New Course</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Start building a new educational course
-                    </p>
-                  </div>
-                </div>
+            {courses.length === 0 && (
+              <Card className="border-0 shadow-md">
+                <CardContent className="p-6 text-center">
+                  <BookMarked className="h-12 w-12 mx-auto text-slate-300 mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No courses yet</h3>
+                  <p className="text-slate-500 mb-4">
+                    Start creating your first course to share your knowledge
+                    with students
+                  </p>
+                  <Link href="/dashboard/lecturer/courses/create">
+                    <Button>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Create Your First Course
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Recent Student Activity */}
+          <div>
+            <h2 className="text-2xl font-bold mb-4">
+              Recent Student Enrollments
+            </h2>
+            <Card className="border-0 shadow-md">
+              <CardContent className="p-4">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Student</TableHead>
+                      <TableHead>Course</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {dashboardData.recentEnrollments.length > 0 ? (
+                      dashboardData.recentEnrollments.map((enrollment) => (
+                        <TableRow key={enrollment.id}>
+                          <TableCell className="font-medium">
+                            {enrollment.studentName}
+                          </TableCell>
+                          <TableCell>{enrollment.course}</TableCell>
+                          <TableCell>{formatDate(enrollment.date)}</TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="sm">
+                              View
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell
+                          colSpan={4}
+                          className="text-center py-6 text-slate-500"
+                        >
+                          No recent enrollments
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
-          </Link>
+          </div>
+        </div>
 
-          <Link href="/dashboard/lecturer/analytics">
-            <Card className="cursor-pointer hover:bg-muted/50 transition-colors">
-              <CardContent className="pt-6">
-                <div className="flex items-center space-x-4">
-                  <div className="p-2 bg-primary/10 rounded-full">
-                    <BarChart3 className="h-5 w-5 text-primary" />
+        {/* Right Column - Schedule & Tasks */}
+        <div className="space-y-8">
+          {/* Pending Tasks */}
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Pending Tasks</h2>
+            <Card className="border-0 shadow-md">
+              <CardContent className="p-4">
+                {dashboardData.pendingTasks.length > 0 ? (
+                  <div className="space-y-4">
+                    {dashboardData.pendingTasks.map((task) => (
+                      <div key={task.id} className="flex items-start gap-3">
+                        <div
+                          className={`p-2 rounded-lg ${
+                            task.priority === "high"
+                              ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300"
+                              : task.priority === "medium"
+                              ? "bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300"
+                              : "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300"
+                          }`}
+                        >
+                          <ListChecks className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex justify-between">
+                            <h3 className="font-medium">{task.title}</h3>
+                            <Badge
+                              variant={
+                                task.priority === "high"
+                                  ? "destructive"
+                                  : task.priority === "medium"
+                                  ? "default"
+                                  : "outline"
+                              }
+                            >
+                              {task.priority}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
+                            Course: {task.course}
+                          </p>
+                          <div className="flex justify-between items-center mt-1">
+                            <p className="text-xs text-slate-500">
+                              Due: {formatDate(task.dueDate)}
+                            </p>
+                            <span className="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-full">
+                              {task.pendingCount} pending
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div>
-                    <h3 className="font-medium">View Analytics</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Check performance metrics for your courses
-                    </p>
+                ) : (
+                  <div className="text-center py-6">
+                    <ListChecks className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                    <p className="text-slate-500">No pending tasks</p>
                   </div>
-                </div>
+                )}
               </CardContent>
+              <CardFooter className="bg-slate-50 dark:bg-slate-800 p-4">
+                <Link
+                  href="/dashboard/lecturer/tasks"
+                  className="text-blue-600 hover:underline text-sm flex items-center mx-auto"
+                >
+                  View all tasks <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </CardFooter>
             </Card>
-          </Link>
+          </div>
 
-          <Link href="/dashboard/lecturer/resources">
-            <Card className="cursor-pointer hover:bg-muted/50 transition-colors">
-              <CardContent className="pt-6">
-                <div className="flex items-center space-x-4">
-                  <div className="p-2 bg-primary/10 rounded-full">
-                    <FileText className="h-5 w-5 text-primary" />
+          {/* Upcoming Schedule */}
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Upcoming Schedule</h2>
+            <Card className="border-0 shadow-md">
+              <CardContent className="p-4">
+                {dashboardData.upcomingSchedule.length > 0 ? (
+                  <div className="space-y-4">
+                    {dashboardData.upcomingSchedule.map((event) => (
+                      <div key={event.id} className="flex gap-3">
+                        <div className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded-lg p-2 h-fit">
+                          <CalendarDays className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">{event.title}</h4>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
+                            {event.course}
+                          </p>
+                          <div className="flex items-center justify-between mt-1">
+                            <p className="text-xs text-slate-500">
+                              {formatDateTime(event.date)}
+                            </p>
+                            <Badge variant="outline" className="ml-2">
+                              {event.attendees} attendees
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div>
-                    <h3 className="font-medium">Learning Resources</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Access resources for course creation
-                    </p>
+                ) : (
+                  <div className="text-center py-6">
+                    <CalendarDays className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                    <p className="text-slate-500">No upcoming events</p>
                   </div>
-                </div>
+                )}
               </CardContent>
+              <CardFooter className="bg-slate-50 dark:bg-slate-800 p-4">
+                <Link
+                  href="/dashboard/lecturer/calendar"
+                  className="text-blue-600 hover:underline text-sm flex items-center mx-auto"
+                >
+                  View full calendar <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </CardFooter>
             </Card>
-          </Link>
+          </div>
+
+          {/* Student Reviews */}
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Recent Reviews</h2>
+            <Card className="border-0 shadow-md">
+              <CardContent className="p-4">
+                {dashboardData.recentReviews.length > 0 ? (
+                  <div className="space-y-4">
+                    {dashboardData.recentReviews.map((review) => (
+                      <div
+                        key={review.id}
+                        className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="font-medium">
+                            {review.studentName}
+                          </div>
+                          <div className="flex text-amber-500">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                className={`h-3 w-3 ${
+                                  star <= review.rating
+                                    ? "fill-current"
+                                    : "text-slate-300"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
+                          "{review.comment}"
+                        </p>
+                        <div className="flex justify-between items-center text-xs text-slate-500">
+                          <span>{review.course}</span>
+                          <span>{formatDate(review.date)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <MessageSquare className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                    <p className="text-slate-500">No reviews yet</p>
+                  </div>
+                )}
+              </CardContent>
+              <CardFooter className="bg-slate-50 dark:bg-slate-800 p-4">
+                <Link
+                  href="/dashboard/lecturer/reviews"
+                  className="text-blue-600 hover:underline text-sm flex items-center mx-auto"
+                >
+                  View all reviews <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </CardFooter>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
