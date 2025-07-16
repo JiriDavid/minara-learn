@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Background from "@/components/Background"
 import {
   GraduationCap,
   BookOpen,
@@ -24,16 +23,16 @@ export const metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="container mx-auto px-4 py-16">
-      <Background />
-      {/* Hero Section */}
-      <section className="flex flex-col md:flex-row gap-12 items-center mb-20">
+    <div className="min-h-screen bg-white dark:bg-gray-900">
+      <div className="container mx-auto px-4 py-16">
+        {/* Hero Section */}
+        <section className="flex flex-col md:flex-row gap-12 items-center mb-20">
         <div className="md:w-1/2">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight text-white">
-            Reimagining Education for Every{" "}
-            <span className="text-blue-600">Student</span>
+          <h1 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight text-gray-900 dark:text-white">
+            Reimagining Education for{" "}
+            <span className="text-blue-600">Every Student</span>
           </h1>
-          <p className="text-lg text-slate-300 dark:text-slate-200 mb-6">
+          <p className="text-lg text-slate-600 dark:text-slate-200 mb-6">
             Minara Learn is a learner-focused platform created to respond to
             Zimbabwe’s education inequalities. Our goal is to offer a safe,
             accessible, and affordable alternative to nighttime extra lessons
@@ -43,7 +42,7 @@ export default function AboutPage() {
             <Link href="/courses">
               <Button
                 size="lg"
-                className="bg-white dark:bg-black text-blue-950 dark:text-gray-200"
+                className="bg-white dark:bg-black text-blue-950 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 Explore Subjects
               </Button>
@@ -98,10 +97,10 @@ export default function AboutPage() {
       {/* Mission and Vision */}
       <section className="mb-20">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
-            Our Mission & Vision
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-white">
+            Our Mission & <span className="text-blue-600">Vision</span>
           </h2>
-          <p className="text-lg text-slate-300 dark:text-slate-400 max-w-3xl mx-auto">
+          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             We exist to eliminate educational barriers caused by inequality,
             abuse, and inaccessibility — starting in Zimbabwe and reaching
             beyond.
@@ -190,10 +189,10 @@ export default function AboutPage() {
           </div>
 
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
-              Our Story
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900 dark:text-white">
+              Our <span className="text-blue-600">Story</span>
             </h2>
-            <div className="space-y-6 text-slate-200 dark:text-slate-400">
+            <div className="space-y-6 text-gray-600 dark:text-gray-300">
               <p>
                 Minara Learn was founded in 2025 by David Promise Jiri with a
                 burden to stop exploitative extra lessons that often took place
@@ -240,10 +239,10 @@ export default function AboutPage() {
       {/* Team section */}
       <section className="mb-20">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
-            Our Leadership Journey
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-white">
+            Our Leadership <span className="text-blue-600">Journey</span>
           </h2>
-          <p className="text-lg text-slate-300 dark:text-slate-200 max-w-3xl mx-auto">
+          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             Every movement starts with one step. Minara Learn is currently led
             by its founder, David Promise Jiri, but the vision is to build a
             passionate team of educators, technologists, and community builders
@@ -293,10 +292,10 @@ export default function AboutPage() {
       {/* Values & Culture */}
       <section className="mb-20">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
-            Values & Culture
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-white">
+            Values & <span className="text-blue-600">Culture</span>
           </h2>
-          <p className="text-lg text-slate-300 dark:text-slate-400 max-w-3xl mx-auto">
+          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             The principles that guide our journey and shape who we are.
           </p>
         </div>
@@ -510,6 +509,7 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+    </div>
     </div>
   );
 }

@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import Background from "@/components/Background";
 import {
   Select,
   SelectContent,
@@ -74,11 +73,11 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="container bg-none mx-auto px-4 py-16">
-      <Background />
-      <div className="text-center mb-16">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">Get in Touch</h1>
-        <p className="text-lg text-slate-300 dark:text-slate-400 max-w-2xl mx-auto">
+    <div className="min-h-screen bg-white dark:bg-gray-900">
+      <div className="container mx-auto px-4 py-16">
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">Get in <span className="text-blue-600">Touch</span></h1>
+          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
           Have questions about our courses, platform, or need assistance? Our
           team is here to help you succeed on your learning journey.
         </p>
@@ -410,10 +409,10 @@ export default function ContactPage() {
       {/* FAQ Section */}
       <section className="mb-20">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4 text-white">
-            Frequently Asked Questions
+          <h2 className="text-3xl font-bold mb-4">
+            Frequently Asked <span className="text-blue-600">Questions</span>
           </h2>
-          <p className="text-slate-300 dark:text-slate-400 max-w-2xl mx-auto">
+          <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
             Find quick answers to common questions about our platform and
             services.
           </p>
@@ -459,7 +458,7 @@ export default function ContactPage() {
         </div>
 
         <div className="text-center mt-8">
-          <p className="text-slate-300 dark:text-slate-400 mb-4">
+          <p className="text-slate-600 dark:text-slate-400 mb-4">
             Still have questions? Our support team is here to help.
           </p>
           <Link href="/faq">
@@ -470,7 +469,7 @@ export default function ContactPage() {
 
       {/* Call to Action */}
       <section className="bg-slate-100 dark:bg-slate-800 rounded-xl p-8 text-center">
-        <h2 className="text-2xl font-bold mb-4">Join Our Community</h2>
+        <h2 className="text-2xl font-bold mb-4">Join Our <span className="text-blue-600">Community</span></h2>
         <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-6">
           Connect with other learners, instructors, and education enthusiasts on
           our social platforms.
@@ -489,6 +488,7 @@ export default function ContactPage() {
           )}
         </div>
       </section>
+      </div>
     </div>
   );
 }

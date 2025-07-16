@@ -3,7 +3,6 @@ import { Book, Search, Filter } from "lucide-react";
 import CourseCard from "@/components/CourseCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import Background from "@/components/Background";
 import getCourses from "../../lib/GetCourses"
 
 export const metadata = {
@@ -18,22 +17,21 @@ export default async function CoursesPage() {
   const courses = await getCourses();
 
   return (
-    <div className="container py-10 px-6">
-      <Background />
+    <div className="container py-10 px-6 bg-white dark:bg-gray-900 min-h-screen">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold mb-2 text-white">Browse Courses</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">Browse Courses</h1>
+          <p className="text-gray-600 dark:text-gray-300">
             Discover our wide range of courses and start learning today
           </p>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
             <Input
               type="search"
               placeholder="Search courses..."
-              className="pl-8 w-[200px] md:w-[300px] text-white"
+              className="pl-8 w-[200px] md:w-[300px] text-gray-900 dark:text-white"
             />
           </div>
           <Button variant="outline" size="icon">

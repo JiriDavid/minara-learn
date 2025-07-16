@@ -6,7 +6,6 @@ import { Book } from "lucide-react";
 import CourseCard from "@/components/CourseCard";
 import CourseFilters from "@/components/CourseFilters";
 import { Button } from "@/components/ui/button";
-import Background from "@/components/Background"
 
 export default function CoursesClientPage({
   initialCourses,
@@ -71,7 +70,6 @@ export default function CoursesClientPage({
 
   return (
     <div>
-      <Background/>
       <CourseFilters
         onFilterChange={handleFilterChange}
         initialFilters={searchParams}

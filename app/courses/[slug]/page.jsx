@@ -2,7 +2,6 @@
 import { notFound } from "next/navigation";
 import { getServerSupabaseClient } from "@/lib/supabase";
 import CoursePageClient from "./course-client.jsx";
-import Background from "@/components/Background"
 
 // Metadata for the page
 export async function generateMetadata({ params }) {
@@ -59,7 +58,6 @@ export default async function CoursePage({ params }) {
   // Pass the course data to the client component
   return (
     <>
-      <Background />
       <CoursePageClient course={course} />
     </>
   );

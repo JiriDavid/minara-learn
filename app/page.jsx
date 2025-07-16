@@ -5,7 +5,6 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { useAuth } from "@/lib/auth-context";
-import Background from "@/components/Background"
 import getCourses from "@/lib/GetCourses";
 import {
   ArrowRight,
@@ -357,7 +356,7 @@ export default function Home() {
     },
     {
       icon: Users,
-      value: "50+",
+      value: "5+",
       label: "Expert Tutors",
     },
     {
@@ -367,16 +366,15 @@ export default function Home() {
     },
     {
       icon: GraduationCap,
-      value: "1000+",
+      value: "15+",
       label: "Active Students",
     },
   ];
 
   return (
-    <div className="relative min-h-screen">
-      <Background />
+    <div className="relative min-h-screen bg-white dark:bg-gray-900">
       {/* Hero Section */}
-      <section className="relative overflow-hidden px-4 py-20 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden px-4 py-20 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="mx-auto max-w-7xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -388,7 +386,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-4xl font-bold text-white sm:text-6xl"
+              className="text-4xl font-bold text-gray-900 dark:text-white sm:text-6xl"
             >
               Master ZIMSEC Exams with Expert-Led{" "}
               <span className="text-[#613bdd]">Online Lessons</span>
@@ -397,7 +395,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="mx-auto mt-6 max-w-2xl text-lg text-gray-100"
+              className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 dark:text-gray-300"
             >
               Acess top-quality ZIMSEC preparation from anywhere in Zimbabwe.
               Safe, flexible, and tailored to your needs.
@@ -444,7 +442,7 @@ export default function Home() {
                 placeholder="Search ZIMSEC subjects..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-12 w-full rounded-full border-primary-200 pl-6 pr-12 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-primary-800 dark:bg-gray-900 placeholder:text-gray-200 text-white"
+                className="h-12 w-full rounded-full border-primary-200 pl-6 pr-12 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-primary-800 dark:bg-gray-900 placeholder:text-gray-600 text-gray-900 dark:text-gray-200"
               />
               <Button
                 size="icon"
@@ -467,10 +465,10 @@ export default function Home() {
             transition={{ duration: 0.8 }}
             className="text-center"
           >
-            <h2 className="text-3xl font-bold tracking-tight text-white dark:text-text-dark sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight dark:text-text-dark sm:text-4xl">
               Why Choose Our <span className="text-[#613bdd]">Platform?</span>
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-300 dark:text-gray-400">
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-900 dark:text-gray-400">
               Quality Education for ZIMSEC success, accessible and safe.
             </p>
           </motion.div>
@@ -492,10 +490,10 @@ export default function Home() {
             transition={{ duration: 0.8 }}
             className="text-center"
           >
-            <h2 className="text-3xl font-bold tracking-tight text-white dark:text-text-dark sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight dark:text-text-dark sm:text-4xl">
               Popular <span className="text-[#613bdd]">Courses</span>
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-300 dark:text-gray-400">
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-900 dark:text-gray-400">
               Start your learning journey with our most popular courses.
             </p>
           </motion.div>
@@ -547,10 +545,10 @@ export default function Home() {
             transition={{ duration: 0.8 }}
             className="text-center"
           >
-            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               Ready to Start Learning?
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-200">
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-900 dark:text-gray-400">
               Join a growing community of learners who are unlocking their
               potential and shaping the future with Minara Learn.
             </p>
@@ -565,7 +563,7 @@ export default function Home() {
                   <Button
                     size="lg"
                     variant="secondary"
-                    className="group bg-white text-primary-600 hover:bg-primary-50"
+                    className="group bg-white text-primary-800 hover:bg-primary-50 dark:bg-gray-600 dark:text-primary-400 dark:border-primary-800" 
                   >
                     Get Started Now
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />

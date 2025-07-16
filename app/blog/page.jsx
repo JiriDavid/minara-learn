@@ -5,7 +5,6 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Search, Clock, User, ChevronRight, ArrowRight } from "lucide-react";
-import Background from "@/components/Background"
 
 export const metadata = {
   title: "Blog | E-X-TRA LMS",
@@ -136,12 +135,12 @@ const TRENDING_TOPICS = [
 
 export default function BlogPage() {
   return (
-    <div className="container mx-auto px-4 py-16">
-      <Background />
-      {/* Header */}
-      <div className="text-center mb-16">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">E-X-TRA Blog</h1>
-        <p className="text-lg text-slate-600 dark:text-slate-400 max-w-3xl mx-auto mb-8">
+    <div className="min-h-screen bg-white dark:bg-gray-900">
+      <div className="container mx-auto px-4 py-16">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">E-X-TRA Blog</h1>
+          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8">
           Insights, guides, and expert perspectives on education, learning
           technologies, and professional development.
         </p>
@@ -391,6 +390,7 @@ export default function BlogPage() {
           </Button>
         </div>
       </section>
+      </div>
     </div>
   );
 }
