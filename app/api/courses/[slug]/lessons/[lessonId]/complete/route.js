@@ -1,50 +1,49 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import connectToDB from "@/lib/mongodb";
-import User from "@/models/User";
-import Course from "@/models/Course";
-import Lesson from "@/models/Lesson";
-import Enrollment from "@/models/Enrollment";
-import Completion from "@/models/Completion";
+import { createClient } from "@/utils/supabase/server";
 
 export async function POST(req, { params }) {
   try {
-    // Get the authenticated user ID
-    const { userId } = await auth();
+    const supabase = await createClient();
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (!userId) {
+    if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { slug, lessonId } = params;
 
-    // Connect to database
-    await connectToDB();
+    // Find the course
+    const { data: course, error: courseError } = await supabase
+      .from('courses')
+      .select('*')
+      .eq('slug', slug)
+      .single();
 
-    // Find the user, course, and lesson
-    const user = await User.findOne({ clerkId: userId });
-    const course = await Course.findOne({ slug });
-    const lesson = await Lesson.findById(lessonId);
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    if (!course) {
+    if (courseError || !course) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
 
-    if (!lesson) {
+    // Find the lesson
+    const { data: lesson, error: lessonError } = await supabase
+      .from('lessons')
+      .select('*')
+      .eq('id', lessonId)
+      .single();
+
+    if (lessonError || !lesson) {
       return NextResponse.json({ error: "Lesson not found" }, { status: 404 });
     }
 
     // Check if the user is enrolled in the course
-    const enrollment = await Enrollment.findOne({
-      user: user._id,
-      course: course._id,
-    });
+    const { data: enrollment, error: enrollmentError } = await supabase
+      .from('enrollments')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('course_id', course.id)
+      .single();
 
-    if (!enrollment) {
+    if (enrollmentError || !enrollment) {
       return NextResponse.json(
         { error: "You are not enrolled in this course" },
         { status: 400 }
@@ -52,10 +51,12 @@ export async function POST(req, { params }) {
     }
 
     // Check if lesson already completed
-    const existingCompletion = await Completion.findOne({
-      user: user._id,
-      lesson: lesson._id,
-    });
+    const { data: existingCompletion, error: completionCheckError } = await supabase
+      .from('completions')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('lesson_id', lessonId)
+      .single();
 
     if (existingCompletion) {
       return NextResponse.json({
@@ -65,37 +66,62 @@ export async function POST(req, { params }) {
     }
 
     // Create a new completion record
-    const completion = new Completion({
-      user: user._id,
-      course: course._id,
-      lesson: lesson._id,
-    });
+    const { data: completion, error: completionError } = await supabase
+      .from('completions')
+      .insert([
+        {
+          user_id: user.id,
+          course_id: course.id,
+          lesson_id: lessonId,
+          completed_at: new Date().toISOString(),
+        }
+      ])
+      .select()
+      .single();
 
-    await completion.save();
+    if (completionError) {
+      console.error("Error creating completion:", completionError);
+      return NextResponse.json(
+        { error: "Failed to mark lesson as complete" },
+        { status: 500 }
+      );
+    }
 
     // Update the enrollment progress
-    const totalLessons = await Lesson.countDocuments({ course: course._id });
-    const completedLessons = await Completion.countDocuments({
-      user: user._id,
-      course: course._id,
-    });
+    const { count: totalLessons, error: totalLessonsError } = await supabase
+      .from('lessons')
+      .select('*', { count: 'exact', head: true })
+      .eq('course_id', course.id);
 
-    const progressPercentage = Math.round(
-      (completedLessons / totalLessons) * 100
-    );
+    const { count: completedLessons, error: completedLessonsError } = await supabase
+      .from('completions')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('course_id', course.id);
 
-    enrollment.progress = progressPercentage;
-    enrollment.isCompleted = progressPercentage === 100;
+    const progressPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
-    await enrollment.save();
+    // Update enrollment progress
+    const { error: updateError } = await supabase
+      .from('enrollments')
+      .update({
+        progress: progressPercentage,
+        is_completed: progressPercentage === 100,
+      })
+      .eq('user_id', user.id)
+      .eq('course_id', course.id);
+
+    if (updateError) {
+      console.error("Error updating enrollment progress:", updateError);
+    }
 
     return NextResponse.json({
       message: "Lesson marked as complete",
       completion: {
-        id: completion._id,
-        courseId: course._id,
-        lessonId: lesson._id,
-        completedAt: completion.createdAt,
+        id: completion.id,
+        courseId: course.id,
+        lessonId: lesson.id,
+        completedAt: completion.completed_at,
       },
       progress: progressPercentage,
     });

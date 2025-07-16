@@ -72,7 +72,7 @@ export default function DashboardLayout({ children }) {
     const fetchUserRole = async () => {
       try {
         if (!authLoading && !user) {
-          router.replace("/login");
+          router.replace("/auth/signin");
           return;
         }
 
@@ -81,7 +81,7 @@ export default function DashboardLayout({ children }) {
 
         if (response.status === 401 || !data.success) {
           console.log("Authentication failed, redirecting to login");
-          router.replace("/login");
+          router.replace("/auth/signin");
           return;
         }
 
@@ -94,12 +94,12 @@ export default function DashboardLayout({ children }) {
           }
         } else {
           console.error("Invalid user data format:", data);
-          router.replace("/login");
+          router.replace("/auth/signin");
           return;
         }
       } catch (error) {
         console.error("Error fetching user role:", error);
-        router.replace("/login");
+        router.replace("/auth/signin");
         return;
       } finally {
         setIsLoading(false);
@@ -125,7 +125,7 @@ export default function DashboardLayout({ children }) {
   }
 
   if (!authLoading && !user) {
-    router.replace("/login");
+    router.replace("/auth/signin");
     return;
   }
 

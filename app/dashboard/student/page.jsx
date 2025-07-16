@@ -63,7 +63,7 @@ export default function StudentDashboard() {
         const userData = await userResponse.json();
 
         if (userResponse.status === 401 || !userData.success) {
-          router.replace("/login");
+          router.replace("/auth/signin");
           return;
         }
 

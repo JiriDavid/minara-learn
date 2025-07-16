@@ -1,10 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import connectToDB from "@/lib/database";
-import Review from "@/models/Review";
-import Course from "@/models/Course";
-import User from "@/models/User";
+import { createClient } from "@/utils/supabase/server";
 
 // GET - fetch reviews for a course
 export async function GET(req, { params }) {

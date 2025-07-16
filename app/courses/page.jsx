@@ -3,8 +3,8 @@ import { Book, Search, Filter } from "lucide-react";
 import CourseCard from "@/components/CourseCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getServerSupabaseClient } from "@/lib/supabase";
 import Background from "@/components/Background";
+import getCourses from "../../lib/GetCourses"
 
 export const metadata = {
   title: "Browse Courses | E-X-TRA LMS",
@@ -12,35 +12,7 @@ export const metadata = {
     "Browse through our collection of courses and start learning today",
 };
 
-// Function to fetch courses from Supabase
-async function getCourses() {
-  try {
-    const supabase = getServerSupabaseClient();
 
-    const { data: courses, error } = await supabase
-      .from("courses")
-      .select(
-        `
-        *,
-        lecturer:profiles(name, avatar_url)
-      `
-      )
-      .not("published_at", "is", null)
-      .order("created_at", { ascending: false })
-      .limit(20);
-
-    if (error) {
-      console.error("Error fetching courses:", error);
-      return [];
-    }
-
-    console.log("Fetched courses:", courses);
-    return courses;
-  } catch (error) {
-    console.error("Error fetching courses:", error);
-    return [];
-  }
-}
 
 export default async function CoursesPage() {
   const courses = await getCourses();
@@ -50,7 +22,7 @@ export default async function CoursesPage() {
       <Background />
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Browse Courses</h1>
+          <h1 className="text-3xl font-bold mb-2 text-white">Browse Courses</h1>
           <p className="text-muted-foreground">
             Discover our wide range of courses and start learning today
           </p>
@@ -61,7 +33,7 @@ export default async function CoursesPage() {
             <Input
               type="search"
               placeholder="Search courses..."
-              className="pl-8 w-[200px] md:w-[300px]"
+              className="pl-8 w-[200px] md:w-[300px] text-white"
             />
           </div>
           <Button variant="outline" size="icon">

@@ -1,49 +1,66 @@
-import { clerkClient } from '@clerk/nextjs';
 import { NextResponse } from 'next/server';
-import connectToDB from '@/app/lib/db';
-import Course from '@/app/models/Course';
+import { createClient } from '@/utils/supabase/server';
 
 export async function GET(request) {
   try {
-    const { userId } = await clerkClient.authenticateRequest({
-      request,
-      secretKey: process.env.CLERK_SECRET_KEY,
-    });
+    const supabase = await createClient();
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (!userId) {
+    if (authError || !user) {
       return NextResponse.json(
         { success: false, message: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    await connectToDB();
+    // Check if user has lecturer role
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
 
-    // Get user from database to verify they are a lecturer
-    const User = (await import('@/app/models/User')).default;
-    const user = await User.findOne({ clerkId: userId });
-
-    if (!user || user.role !== 'lecturer') {
+    if (profileError || profile?.role !== 'lecturer') {
       return NextResponse.json(
         { success: false, message: 'Unauthorized - Lecturer role required' },
         { status: 403 }
       );
     }
 
-    // Find all courses created by this lecturer
-    const courses = await Course.find({ instructor: user._id })
-      .sort({ createdAt: -1 })
-      .select('title slug description duration level isPublished category enrollmentCount averageRating revenue createdAt updatedAt');
+    // Get courses created by this lecturer
+    const { data: courses, error: coursesError } = await supabase
+      .from('courses')
+      .select(`
+        *,
+        enrollments(count),
+        reviews(rating)
+      `)
+      .eq('instructor_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (coursesError) {
+      throw coursesError;
+    }
+
+    // Calculate enrollment counts and average ratings
+    const coursesWithStats = courses?.map(course => ({
+      ...course,
+      enrollment_count: course.enrollments?.length || 0,
+      average_rating: course.reviews?.length > 0 
+        ? course.reviews.reduce((sum, review) => sum + review.rating, 0) / course.reviews.length
+        : 0,
+    })) || [];
 
     return NextResponse.json({
       success: true,
-      data: courses,
+      courses: coursesWithStats,
     });
   } catch (error) {
     console.error('Error fetching lecturer courses:', error);
     return NextResponse.json(
-      { success: false, message: 'Failed to fetch courses' },
+      { success: false, message: 'Internal server error' },
       { status: 500 }
     );
   }
-} 
+}

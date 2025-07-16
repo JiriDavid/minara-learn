@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
 import { LogOut } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
+import { toast } from "sonner";
 
 import {
   Card,
@@ -22,11 +23,19 @@ export default function SignOut() {
   const handleSignOut = async () => {
     try {
       setIsLoading(true);
-      await signOut({ redirect: false });
-      router.push("/");
-      router.refresh();
+      const supabase = createClient();
+      const { error } = await supabase.auth.signOut();
+      
+      if (!error) {
+        toast.success("Signed out successfully");
+        router.push("/");
+        router.refresh();
+      } else {
+        toast.error("Error signing out");
+      }
     } catch (error) {
       console.error("Sign out error:", error);
+      toast.error("Error signing out");
     } finally {
       setIsLoading(false);
     }

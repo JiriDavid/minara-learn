@@ -64,7 +64,7 @@ const Navbar = () => {
 
   // Dashboard routes by role
   const getDashboardLink = () => {
-    if (loading || !user) return "/login";
+    if (loading || !user) return "/auth/signin";
     // For now, we'll default to student dashboard
     // This would need to be updated based on user role from profile
     return "/dashboard/student";
@@ -210,10 +210,10 @@ const Navbar = () => {
                 </>
               ) : (
                 <>
-                  <Link href="/login">
+                  <Link href="/auth/signin">
                     <Button variant="ghost">Login</Button>
                   </Link>
-                  <Link href="/register">
+                  <Link href="/auth/signup">
                     <Button variant="primary">Register</Button>
                   </Link>
                 </>
@@ -330,14 +330,14 @@ const Navbar = () => {
             ) : (
               <div className="mt-3 space-y-1">
                 <Link
-                  href="/login"
+                  href="/auth/signin"
                   className="block px-4 py-2 text-base font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
                   onClick={closeMenu}
                 >
                   Login
                 </Link>
                 <Link
-                  href="/register"
+                  href="/auth/signup"
                   className="block px-4 py-2 text-base font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
                   onClick={closeMenu}
                 >

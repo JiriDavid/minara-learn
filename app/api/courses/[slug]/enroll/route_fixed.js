@@ -33,31 +33,35 @@ export async function POST(req, { params }) {
       .single();
 
     if (existingEnrollment) {
-      return new NextResponse("Already enrolled", { status: 400 });
+      return new NextResponse("Already enrolled in this course", { status: 400 });
     }
 
-    // Create new enrollment
+    // Create enrollment
     const { data: enrollment, error: enrollmentError } = await supabase
       .from('enrollments')
       .insert([
         {
           user_id: user.id,
           course_id: course.id,
-          status: "in-progress",
-          progress: 0,
-        }
+          enrolled_at: new Date().toISOString(),
+          status: 'in-progress',
+          progress: 0
+        },
       ])
       .select()
       .single();
 
     if (enrollmentError) {
-      console.error("Error enrolling in course:", enrollmentError);
-      return new NextResponse("Internal Server Error", { status: 500 });
+      console.error("Enrollment error:", enrollmentError);
+      return new NextResponse("Error enrolling in course", { status: 500 });
     }
 
-    return NextResponse.json(enrollment);
+    return NextResponse.json({
+      message: "Successfully enrolled in course",
+      enrollment,
+    });
   } catch (error) {
-    console.error("Error enrolling in course:", error);
+    console.error("Error in POST /api/courses/[slug]/enroll:", error);
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }

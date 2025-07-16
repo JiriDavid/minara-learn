@@ -29,7 +29,11 @@ const CourseCard = ({ course }) => {
     <Card className="flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-lg">
       <div className="relative aspect-video overflow-hidden">
         <Image
-          src={thumbnail || "/images/zimsec.png"}
+          src={
+            thumbnail?.startsWith("/")
+              ? thumbnail
+              : `/${thumbnail || "images/zimsec.png"}`
+          }
           alt={title}
           fill
           className="object-cover transition-transform hover:scale-105 duration-500"

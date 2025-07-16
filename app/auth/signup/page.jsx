@@ -3,10 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Eye, EyeOff, Github } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,23 +58,23 @@ export default function SignUp() {
       // Remove confirmPassword and agreeToTerms from data before sending to API
       const { confirmPassword, agreeToTerms, ...userData } = data;
 
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const supabase = createClient();
+      const { error } = await supabase.auth.signUp({
+        email: userData.email,
+        password: userData.password,
+        options: {
+          data: {
+            name: userData.name,
+            role: userData.role || 'student',
+          },
         },
-        body: JSON.stringify(userData),
       });
 
-      const result = await response.json();
-
-      if (response.ok) {
-        toast.success("Account created successfully! Please sign in.");
+      if (!error) {
+        toast.success("Account created successfully! Please check your email for verification.");
         router.push("/auth/signin");
       } else {
-        toast.error(
-          result.message || "Failed to create account. Please try again."
-        );
+        toast.error(error.message || "Failed to create account. Please try again.");
       }
     } catch (error) {
       console.error("Registration error:", error);
@@ -84,8 +84,23 @@ export default function SignUp() {
     }
   };
 
-  const handleOAuthSignIn = (provider) => {
-    signIn(provider, { callbackUrl: "/" });
+  const handleOAuthSignIn = async (provider) => {
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?redirect=/`,
+        },
+      });
+      
+      if (error) {
+        toast.error("OAuth sign in failed");
+      }
+    } catch (error) {
+      console.error("OAuth error:", error);
+      toast.error("Something went wrong. Please try again.");
+    }
   };
 
   return (

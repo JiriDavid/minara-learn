@@ -1,9 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import connectToDB from "@/lib/database";
-import Review from "@/models/Review";
-import Course from "@/models/Course";
+import { createClient } from "@/utils/supabase/server";
 
 // PUT - update a review
 export async function PUT(req, { params }) {
@@ -16,17 +12,18 @@ export async function PUT(req, { params }) {
     );
   }
 
-  // Get session data
-  const session = await getServerSession(authOptions);
-
-  if (!session) {
-    return NextResponse.json(
-      { error: "Authentication required" },
-      { status: 401 }
-    );
-  }
-
   try {
+    const supabase = await createClient();
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
     const { rating, review } = await req.json();
 
     if (!rating || rating < 1 || rating > 5) {

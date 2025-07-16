@@ -368,7 +368,7 @@ export default function HomeClient({ courses, stats }) {
                 </Button>
               </Link>
               {!isSignedIn && (
-                <Link href="/register">
+                <Link href="/auth/signup">
                   <Button
                     variant="outline"
                     size="lg"
@@ -531,7 +531,7 @@ export default function HomeClient({ courses, stats }) {
               className="mt-10"
             >
               {!isSignedIn ? (
-                <Link href="/register">
+                <Link href="/auth/signup">
                   <Button
                     size="lg"
                     variant="secondary"

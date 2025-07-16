@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Eye, EyeOff, Github, Mail } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function SignIn() {
+function SignInContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
@@ -45,14 +45,13 @@ export default function SignIn() {
   const onSubmit = async (data) => {
     try {
       setIsLoading(true);
-      const result = await signIn("credentials", {
-        redirect: false,
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
-        callbackUrl,
       });
 
-      if (!result?.error) {
+      if (!error) {
         toast.success("Signed in successfully");
         router.push(callbackUrl);
       } else {
@@ -66,8 +65,23 @@ export default function SignIn() {
     }
   };
 
-  const handleOAuthSignIn = (provider) => {
-    signIn(provider, { callbackUrl });
+  const handleOAuthSignIn = async (provider) => {
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?redirect=${callbackUrl}`,
+        },
+      });
+      
+      if (error) {
+        toast.error("OAuth sign in failed");
+      }
+    } catch (error) {
+      console.error("OAuth error:", error);
+      toast.error("Something went wrong. Please try again.");
+    }
   };
 
   return (
@@ -236,5 +250,13 @@ export default function SignIn() {
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+export default function SignIn() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SignInContent />
+    </Suspense>
   );
 }

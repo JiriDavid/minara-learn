@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import connectToDB from "@/lib/database";
-import Review from "@/models/Review";
+import { createClient } from "@/utils/supabase/server";
 
 // POST - like or unlike a review
 export async function POST(req, { params }) {
@@ -15,47 +12,94 @@ export async function POST(req, { params }) {
     );
   }
 
-  // Get session data
-  const session = await getServerSession(authOptions);
-
-  if (!session) {
-    return NextResponse.json(
-      { error: "Authentication required" },
-      { status: 401 }
-    );
-  }
-
   try {
-    await connectToDB();
+    const supabase = await createClient();
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
 
     // Find the review
-    const review = await Review.findById(reviewId);
+    const { data: review, error: reviewError } = await supabase
+      .from('reviews')
+      .select('*')
+      .eq('id', reviewId)
+      .single();
 
-    if (!review) {
+    if (reviewError || !review) {
       return NextResponse.json({ error: "Review not found" }, { status: 404 });
     }
 
-    const userId = session.user.id;
-
     // Check if user has already liked this review
-    const isLiked = review.likedBy.includes(userId);
+    const { data: existingLike, error: likeCheckError } = await supabase
+      .from('review_likes')
+      .select('*')
+      .eq('review_id', reviewId)
+      .eq('user_id', user.id)
+      .single();
 
-    if (isLiked) {
+    if (existingLike) {
       // Unlike the review
-      review.likedBy = review.likedBy.filter((id) => id.toString() !== userId);
-      review.likes = Math.max(0, review.likes - 1);
+      const { error: unlikeError } = await supabase
+        .from('review_likes')
+        .delete()
+        .eq('review_id', reviewId)
+        .eq('user_id', user.id);
+
+      if (unlikeError) {
+        throw unlikeError;
+      }
+
+      // Update review likes count
+      const { error: updateError } = await supabase
+        .from('reviews')
+        .update({ likes: Math.max(0, (review.likes || 0) - 1) })
+        .eq('id', reviewId);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      return NextResponse.json({
+        likes: Math.max(0, (review.likes || 0) - 1),
+        isLikedByUser: false,
+      });
     } else {
       // Like the review
-      review.likedBy.push(userId);
-      review.likes = (review.likes || 0) + 1;
+      const { error: likeError } = await supabase
+        .from('review_likes')
+        .insert([
+          {
+            review_id: reviewId,
+            user_id: user.id,
+          }
+        ]);
+
+      if (likeError) {
+        throw likeError;
+      }
+
+      // Update review likes count
+      const newLikeCount = (review.likes || 0) + 1;
+      const { error: updateError } = await supabase
+        .from('reviews')
+        .update({ likes: newLikeCount })
+        .eq('id', reviewId);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      return NextResponse.json({
+        likes: newLikeCount,
+        isLikedByUser: true,
+      });
     }
-
-    await review.save();
-
-    return NextResponse.json({
-      likes: review.likes,
-      isLikedByUser: !isLiked,
-    });
   } catch (error) {
     console.error("Error liking review:", error);
     return NextResponse.json(

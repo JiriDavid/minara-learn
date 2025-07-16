@@ -55,34 +55,34 @@ export default function CoursePageClient({ course }) {
     discount > 0 ? price - (price * discount) / 100 : price;
 
   return (
-    <div className="container py-8">
+    <div className="container py-8 px-4">
       {/* Course Header */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         <div className="lg:col-span-2">
           <div className="mb-4">
-            <Badge variant="outline" className="mb-4">
+            <Badge variant="outline" className="mb-4 text-white border-white">
               {category}
             </Badge>
-            <h1 className="text-3xl sm:text-4xl font-bold mb-4">{title}</h1>
-            <p className="text-muted-foreground mb-6">
+            <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-white">{title}</h1>
+            <p className="text-gray-200 mb-6">
               {description.substring(0, 300)}...
             </p>
 
             <div className="flex flex-wrap gap-4 mb-6">
               <div className="flex items-center">
                 <Star className="h-5 w-5 text-yellow-500 mr-1" />
-                <span className="font-bold">{ratings?.average || "New"}</span>
+                <span className="font-bold text-gray-300">{ratings?.average || "New"}</span>
                 <span className="text-muted-foreground ml-1">
                   ({ratings?.count || 0} ratings)
                 </span>
               </div>
               <div className="flex items-center">
                 <Users className="h-5 w-5 text-blue-500 mr-1" />
-                <span>{enrollmentCount || 0} students</span>
+                <span className="text-gray-300">{enrollmentCount || 0} students</span>
               </div>
               <div className="flex items-center">
                 <Calendar className="h-5 w-5 text-green-500 mr-1" />
-                <span>
+                <span className="text-gray-300">
                   Last updated {new Date(publishedAt).toLocaleDateString()}
                 </span>
               </div>
@@ -90,7 +90,7 @@ export default function CoursePageClient({ course }) {
 
             <div className="flex items-center mb-2">
               <Image
-                src={lecturer?.avatar_url || "/placeholder-user.jpg"}
+                src={lecturer?.avatar_url || "/profile-placeholder.png"}
                 alt={lecturer?.name || "Instructor"}
                 width={40}
                 height={40}
@@ -108,7 +108,7 @@ export default function CoursePageClient({ course }) {
           <Card className="sticky top-20">
             <div className="relative aspect-video overflow-hidden rounded-t-lg">
               <Image
-                src={thumbnail || "/placeholder-course.jpg"}
+                src={thumbnail ? `/${thumbnail}` : "/images/zimsec.png"}
                 alt={title}
                 fill
                 className="object-cover"

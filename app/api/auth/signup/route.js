@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
 import { z } from "zod";
-
-import connectToDB from "@/lib/db/mongoose";
-import User from "@/models/User";
+import { createClient } from "@/utils/supabase/server";
 
 const userSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -29,43 +26,57 @@ export async function POST(req) {
 
     const { name, email, password, role } = result.data;
 
-    await connectToDB();
+    const supabase = await createClient();
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    // Sign up the user
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name,
+          role,
+        },
+      },
+    });
+
+    if (authError) {
       return NextResponse.json(
-        { error: "User with this email already exists" },
-        { status: 409 }
+        { error: authError.message },
+        { status: 400 }
       );
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    // Create user profile
+    if (authData.user) {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert([
+          {
+            id: authData.user.id,
+            name,
+            email,
+            role,
+          },
+        ]);
 
-    // Create new user
-    const newUser = new User({
-      name,
-      email,
-      password: hashedPassword,
-      role,
-    });
-
-    await newUser.save();
-
-    // Don't return password in the response
-    const userWithoutPassword = {
-      id: newUser._id.toString(),
-      name: newUser.name,
-      email: newUser.email,
-      role: newUser.role,
-      image: newUser.image,
-      createdAt: newUser.createdAt,
-    };
+      if (profileError) {
+        console.error("Profile creation error:", profileError);
+        // Note: User is already created in auth, but profile creation failed
+        // In a production app, you might want to handle this differently
+      }
+    }
 
     return NextResponse.json(
-      { message: "User created successfully", user: userWithoutPassword },
+      { 
+        message: "User created successfully", 
+        user: {
+          id: authData.user?.id,
+          email: authData.user?.email,
+          name,
+          role,
+        }
+      },
       { status: 201 }
     );
   } catch (error) {

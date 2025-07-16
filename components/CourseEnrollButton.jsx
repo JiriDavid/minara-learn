@@ -2,18 +2,18 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 export default function CourseEnrollButton({ courseId }) {
-  const { data: session, status } = useSession();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleEnroll = async () => {
     // If not logged in, redirect to login
-    if (status === "unauthenticated") {
+    if (!loading && !user) {
       router.push(`/auth/signin?callbackUrl=/courses/${courseId}`);
       return;
     }

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { useAuth } from "@/lib/auth-context";
 import Background from "@/components/Background"
+import getCourses from "@/lib/GetCourses";
 import {
   ArrowRight,
   BookOpen,
@@ -202,12 +203,12 @@ const CourseCard = ({ course, index }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <img
-              src={course.tutor.image}
-              alt={course.tutor.name}
+              src={course.thumbnail}
+              alt={course.title}
               className="h-6 w-6 rounded-full object-cover"
             />
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              {course.tutor.name}
+              {course.itle}
             </span>
           </div>
           <div className="flex items-center gap-1">
@@ -273,46 +274,55 @@ export default function Home() {
     triggerOnce: true,
     threshold: 0.1,
   });
+  const [courses, setCourses] = useState([]);
 
-  // Updated data for ZIMSEC courses
-  const courses = [
-    {
-      id: 1,
-      title: "Mathematics for ZIMSEC O-Level",
-      description: "Master key mathematical concepts for ZIMSEC success.",
-      image: "https://placehold.co/600x400/ffc300/ffffff?text=Maths",
-      category: "O-Level",
-      tutor: {
-        name: "Tendai Moyo",
-        image: "https://placehold.co/100x100/ffc300/ffffff?text=TM",
-      },
-      rating: 4.8,
-    },
-    {
-      id: 2,
-      title: "English Language for ZIMSEC A-Level",
-      description: "Excel in comprehension and composition for A-Level.",
-      image: "https://placehold.co/600x400/ff9b00/ffffff?text=English",
-      category: "A-Level",
-      tutor: {
-        name: "Rumbidzai Chari",
-        image: "https://placehold.co/100x100/ff9b00/ffffff?text=RC",
-      },
-      rating: 4.9,
-    },
-    {
-      id: 3,
-      title: "Combined Science for ZIMSEC",
-      description: "Comprehensive science preparation for O-Level exams.",
-      image: "https://placehold.co/600x400/ff6900/ffffff?text=Science",
-      category: "O-Level",
-      tutor: {
-        name: "Tinashe Nyika",
-        image: "https://placehold.co/100x100/ff6900/ffffff?text=TN",
-      },
-      rating: 4.7,
-    },
-  ];
+  useEffect(() => {
+    async function loadCourses() {
+      const data = await getCourses();
+      setCourses(data.slice(0, 3));
+    }
+    loadCourses();
+  }, []);
+
+  // // Updated data for ZIMSEC courses
+  // const courses = [
+  //   {
+  //     id: 1,
+  //     title: "Mathematics for ZIMSEC O-Level",
+  //     description: "Master key mathematical concepts for ZIMSEC success.",
+  //     image: "https://placehold.co/600x400/ffc300/ffffff?text=Maths",
+  //     category: "O-Level",
+  //     tutor: {
+  //       name: "Tendai Moyo",
+  //       image: "https://placehold.co/100x100/ffc300/ffffff?text=TM",
+  //     },
+  //     rating: 4.8,
+  //   },
+  //   {
+  //     id: 2,
+  //     title: "English Language for ZIMSEC A-Level",
+  //     description: "Excel in comprehension and composition for A-Level.",
+  //     image: "https://placehold.co/600x400/ff9b00/ffffff?text=English",
+  //     category: "A-Level",
+  //     tutor: {
+  //       name: "Rumbidzai Chari",
+  //       image: "https://placehold.co/100x100/ff9b00/ffffff?text=RC",
+  //     },
+  //     rating: 4.9,
+  //   },
+  //   {
+  //     id: 3,
+  //     title: "Combined Science for ZIMSEC",
+  //     description: "Comprehensive science preparation for O-Level exams.",
+  //     image: "https://placehold.co/600x400/ff6900/ffffff?text=Science",
+  //     category: "O-Level",
+  //     tutor: {
+  //       name: "Tinashe Nyika",
+  //       image: "https://placehold.co/100x100/ff6900/ffffff?text=TN",
+  //     },
+  //     rating: 4.7,
+  //   },
+  // ];
 
   // Updated features for ZIMSEC focus
   const features = [
@@ -381,7 +391,7 @@ export default function Home() {
               className="text-4xl font-bold text-white sm:text-6xl"
             >
               Master ZIMSEC Exams with Expert-Led{" "}
-              <span className="text-[#03045e]">Online Lessons</span>
+              <span className="text-[#613bdd]">Online Lessons</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -408,7 +418,7 @@ export default function Home() {
                 </Button>
               </Link>
               {!isSignedIn && (
-                <Link href="/register">
+                <Link href="/auth/signup">
                   <Button
                     variant="outline"
                     size="lg"
@@ -434,7 +444,7 @@ export default function Home() {
                 placeholder="Search ZIMSEC subjects..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-12 w-full rounded-full border-primary-200 pl-6 pr-12 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-primary-800 dark:bg-gray-900 placeholder:text-primary"
+                className="h-12 w-full rounded-full border-primary-200 pl-6 pr-12 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-primary-800 dark:bg-gray-900 placeholder:text-gray-200 text-white"
               />
               <Button
                 size="icon"
@@ -458,7 +468,7 @@ export default function Home() {
             className="text-center"
           >
             <h2 className="text-3xl font-bold tracking-tight text-white dark:text-text-dark sm:text-4xl">
-              Why Choose Our Platform?
+              Why Choose Our <span className="text-[#613bdd]">Platform?</span>
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-300 dark:text-gray-400">
               Quality Education for ZIMSEC success, accessible and safe.
@@ -483,7 +493,7 @@ export default function Home() {
             className="text-center"
           >
             <h2 className="text-3xl font-bold tracking-tight text-white dark:text-text-dark sm:text-4xl">
-              Popular Courses
+              Popular <span className="text-[#613bdd]">Courses</span>
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-300 dark:text-gray-400">
               Start your learning journey with our most popular courses.
@@ -551,7 +561,7 @@ export default function Home() {
               className="mt-10"
             >
               {!isSignedIn ? (
-                <Link href="/register">
+                <Link href="/auth/signup">
                   <Button
                     size="lg"
                     variant="secondary"
