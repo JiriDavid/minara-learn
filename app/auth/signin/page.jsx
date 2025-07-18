@@ -24,6 +24,8 @@ function SignInContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const email = searchParams.get("email") || "";
+  const message = searchParams.get("message");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -33,10 +35,17 @@ function SignInContent() {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      email: "",
+      email: email,
       password: "",
     },
   });
+
+  // Show message if present
+  useState(() => {
+    if (message === "instructor-pending") {
+      toast.info("Your instructor application is pending review. You can sign in, but instructor features will be available after approval.");
+    }
+  }, [message]);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -45,17 +54,40 @@ function SignInContent() {
   const onSubmit = async (data) => {
     try {
       setIsLoading(true);
-      const supabase = createClient();
-      const { error } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
+      
+      // Use the API route for signin to handle profile creation if needed
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password
+        })
       });
 
-      if (!error) {
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // Manually sign in the user client-side after successful API login
+        const supabase = createClient();
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: data.email,
+          password: data.password,
+        });
+
+        if (signInError) {
+          console.error("Client sign-in error:", signInError);
+          toast.error("Login verification failed. Please try again.");
+          return;
+        }
+
         toast.success("Signed in successfully");
         router.push(callbackUrl);
       } else {
-        toast.error("Invalid email or password");
+        console.error("Login API error:", result.message);
+        toast.error(result.message || "Invalid email or password");
       }
     } catch (error) {
       console.error("Sign in error:", error);

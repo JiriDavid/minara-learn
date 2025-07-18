@@ -19,7 +19,7 @@ export async function GET(request) {
     // Start query builder
     let query = supabase.from("courses").select(`
         *,
-        instructor:profiles(id, full_name, email),
+        instructor:profiles(id, name, email),
         sections:sections(id, title, order)
       `);
 

@@ -48,17 +48,30 @@ export async function POST(request) {
     }
 
     // Get user profile from profiles table
-    const { data: profile, error: profileError } = await supabase
+    let { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", authData.user.id)
       .single();
 
     if (profileError || !profile) {
-      return NextResponse.json(
-        { success: false, message: "User profile not found" },
-        { status: 404 }
-      );
+      // If no profile exists, log the issue but don't fail the login
+      console.log("Profile not found for user:", authData.user.id);
+      console.log("Profile will be created automatically by auth context");
+      
+      // Return user data without profile for now
+      // The auth context will handle profile creation
+      return NextResponse.json({
+        success: true,
+        data: {
+          id: authData.user.id,
+          email: authData.user.email,
+          name: authData.user.user_metadata?.name || authData.user.email?.split('@')[0] || 'User',
+          role: authData.user.user_metadata?.role || 'student',
+          image: authData.user.user_metadata?.avatar_url || null,
+        },
+        note: "Profile will be created automatically"
+      });
     }
 
     // Return user data with role
@@ -67,7 +80,7 @@ export async function POST(request) {
       data: {
         id: profile.id,
         email: authData.user.email,
-        name: profile.name,
+        name: profile.name, // Use name from schema
         role: profile.role,
         image: profile.avatar_url,
       },

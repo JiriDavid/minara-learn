@@ -4,8 +4,12 @@ import { Toaster } from "sonner";
 import ClientLayout from "@/components/ClientLayout";
 import { AuthProvider } from "@/lib/auth-context";
 
-
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ 
+  subsets: ["latin"],
+  display: 'swap',
+  fallback: ['system-ui', 'arial'],
+  variable: '--font-inter'
+});
 
 export const metadata = {
   title: "Minara Learn - Learning Management System",

@@ -14,21 +14,21 @@ export async function GET(request) {
       );
     }
 
-    // Check if user has lecturer role
+    // Check if user has instructor role
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single();
 
-    if (profileError || profile?.role !== 'lecturer') {
+    if (profileError || (profile?.role !== 'instructor' && profile?.role !== 'admin')) {
       return NextResponse.json(
-        { success: false, message: "Unauthorized - Lecturer role required" },
+        { success: false, message: "Unauthorized - Instructor role required" },
         { status: 403 }
       );
     }
 
-    // Get lecturer statistics
+    // Get instructor statistics
     const { data: courses, error: coursesError } = await supabase
       .from('courses')
       .select('id, title, created_at')
@@ -128,7 +128,7 @@ export async function GET(request) {
       },
     });
   } catch (error) {
-    console.error("Error fetching lecturer stats:", error);
+    console.error("Error fetching instructor stats:", error);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
       { status: 500 }

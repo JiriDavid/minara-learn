@@ -23,7 +23,7 @@ import { convertMinutesToHours } from "@/lib/utils";
 
 export default function StudentCoursesPage() {
   const router = useRouter();
-  const { userId, isLoaded } = useAuth();
+  const { user, profile, role, isStudent, loading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [courses, setCourses] = useState({
@@ -34,14 +34,39 @@ export default function StudentCoursesPage() {
   useEffect(() => {
     const fetchEnrolledCourses = async () => {
       try {
-        if (!isLoaded || !userId) return;
+        // Wait for auth to load
+        if (authLoading) return;
+        
+        // Redirect if not authenticated
+        if (!user) {
+          router.replace("/auth/signin");
+          return;
+        }
+
+        // Redirect if not a student
+        if (!isStudent) {
+          router.push("/dashboard");
+          return;
+        }
 
         setIsLoading(true);
-        // In a real app, fetch from API
-        // const response = await fetch("/api/student/courses");
-        // const data = await response.json();
-
-        // Mock data for demonstration
+        
+        // Fetch actual enrollment data
+        const response = await fetch("/api/student/enrollments");
+        if (response.ok) {
+          const enrollments = await response.json();
+          
+          // Separate into in-progress and completed
+          const inProgress = enrollments.filter(e => e.progress < 100);
+          const completed = enrollments.filter(e => e.progress === 100);
+          
+          setCourses({
+            inProgress,
+            completed
+          });
+        } else {
+          console.error("Failed to fetch enrollments");
+        }
         const mockCourses = {
           inProgress: [
             {
@@ -224,16 +249,20 @@ export default function StudentCoursesPage() {
           ],
         };
 
-        setCourses(mockCourses);
+        setIsLoading(false);
       } catch (error) {
         console.error("Error fetching enrolled courses:", error);
-      } finally {
+        // Set empty arrays on error
+        setCourses({
+          inProgress: [],
+          completed: []
+        });
         setIsLoading(false);
       }
     };
 
     fetchEnrolledCourses();
-  }, [userId, isLoaded]);
+  }, [user, authLoading, isStudent, router]);
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
@@ -250,7 +279,7 @@ export default function StudentCoursesPage() {
 
   const courseCount = courses.inProgress.length + courses.completed.length;
 
-  if (!isLoaded || isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600"></div>

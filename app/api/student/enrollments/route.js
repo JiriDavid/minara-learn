@@ -27,6 +27,17 @@ export async function GET() {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    // Verify user has student role
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || (profile?.role !== 'student' && profile?.role !== 'admin')) {
+      return new NextResponse("Forbidden - Student access required", { status: 403 });
+    }
+
     // Get user's enrollments with course details
     const { data: enrollments, error: enrollmentsError } = await supabase
       .from("enrollments")
@@ -39,11 +50,11 @@ export async function GET() {
           slug,
           thumbnail,
           duration,
-          lecturer:profiles(name)
+          instructor:profiles!instructor_id(name)
         )
       `
       )
-      .eq("student_id", user.id)
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
     if (enrollmentsError) {
@@ -58,7 +69,7 @@ export async function GET() {
       slug: enrollment.course.slug,
       progress: enrollment.progress,
       image: enrollment.course.thumbnail,
-      instructor: enrollment.course.lecturer.name,
+      instructor: enrollment.course.instructor.name,
       lastAccessed: enrollment.last_accessed,
       course: {
         duration: enrollment.course.duration,

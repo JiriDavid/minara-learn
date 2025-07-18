@@ -34,10 +34,103 @@ import { formatDate } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 
+// Helper functions for mock data
+const getMockCourses = () => [
+  {
+    id: "course1",
+    title: "JavaScript Fundamentals",
+    slug: "javascript-fundamentals",
+    progress: 65,
+    image: "/images/course-js.jpg",
+    thumbnail:
+      "https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    instructor: "John Doe",
+    lastAccessed: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    totalLessons: 24,
+    completedLessons: 16,
+    nextLesson: "Functions and Scope",
+    course: { duration: 1440 }, // 24 hours in minutes
+  },
+  {
+    id: "course2",
+    title: "React - The Complete Guide",
+    slug: "react-complete-guide",
+    progress: 32,
+    image: "/images/course-react.jpg",
+    thumbnail:
+      "https://images.unsplash.com/photo-1633356122102-3fe601e05bd2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    instructor: "Jane Smith",
+    lastAccessed: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    totalLessons: 42,
+    completedLessons: 13,
+    nextLesson: "State and Props",
+    course: { duration: 2520 }, // 42 hours in minutes
+  },
+];
+
+const getMockEvents = () => [
+  {
+    id: "event1",
+    title: "Live Q&A Session",
+    course: "JavaScript Fundamentals",
+    date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+    type: "webinar",
+  },
+  {
+    id: "event2",
+    title: "Project Submission Deadline",
+    course: "React - The Complete Guide",
+    date: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString(),
+    type: "deadline",
+  },
+];
+
+const getMockRecommendations = () => [
+  {
+    id: "rec1",
+    title: "Advanced JavaScript Concepts",
+    slug: "advanced-javascript",
+    thumbnail:
+      "https://images.unsplash.com/photo-1627398242454-45a1465c2479?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    instructor: "John Doe",
+    rating: 4.8,
+    reviewCount: 325,
+    level: "Advanced",
+  },
+  {
+    id: "rec2",
+    title: "Redux for React Developers",
+    slug: "redux-react-developers",
+    thumbnail:
+      "https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    instructor: "Jane Smith",
+    rating: 4.7,
+    reviewCount: 218,
+    level: "Intermediate",
+  },
+];
+
+const getMockAchievements = () => [
+  {
+    id: "ach1",
+    title: "Fast Learner",
+    description: "Completed 5 lessons in one day",
+    date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    icon: "zap",
+  },
+  {
+    id: "ach2",
+    title: "Perfect Score",
+    description: "Achieved 100% on a quiz",
+    date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    icon: "award",
+  },
+];
+
 export default function StudentDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, profile, role, isStudent, loading: authLoading } = useAuth();
 
   const [dashboardData, setDashboardData] = useState({
     enrolledCourses: 0,
@@ -54,31 +147,89 @@ export default function StudentDashboard() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        if (!user) return;
-
-        setIsLoading(true);
-
-        // Fetch user data to confirm role
-        const userResponse = await fetch("/api/users/me");
-        const userData = await userResponse.json();
-
-        if (userResponse.status === 401 || !userData.success) {
+        // Wait for auth to load
+        if (authLoading) return;
+        
+        // Redirect if not authenticated
+        if (!user) {
           router.replace("/auth/signin");
           return;
         }
 
-        if (!userData.data?.role || userData.data.role !== "student") {
+        // Redirect if not a student
+        if (!isStudent) {
           router.push("/dashboard");
           return;
         }
 
-        // Fetch student's enrollments and progress
-        const enrollmentsResponse = await fetch("/api/student/enrollments");
-        const enrollmentsData = await enrollmentsResponse.json();
+        setIsLoading(true);
 
-        // Fetch activity data
-        const activityResponse = await fetch("/api/student/activity");
-        const activityData = await activityResponse.json();
+        // Fetch student's enrollments with error handling
+        let enrollmentsData = [];
+        try {
+          const enrollmentsResponse = await fetch("/api/student/enrollments");
+          if (enrollmentsResponse.ok) {
+            enrollmentsData = await enrollmentsResponse.json();
+          } else {
+            console.warn("Failed to fetch enrollments:", enrollmentsResponse.statusText);
+          }
+        } catch (error) {
+          console.warn("Enrollments API error:", error);
+        }
+
+        // Fetch activity data with error handling
+        let activityData = [];
+        try {
+          const activityResponse = await fetch("/api/student/activity");
+          if (activityResponse.ok) {
+            const rawActivityData = await activityResponse.json();
+            // Transform activity data to match expected format
+            activityData = rawActivityData.map(activity => ({
+              id: activity.id,
+              type: activity.type,
+              course: activity.course.title,
+              detail: activity.detail,
+              date: activity.created_at,
+              icon: activity.type.includes('completed') ? 'check' : 
+                   activity.type.includes('started') ? 'play' : 
+                   activity.type.includes('certificate') ? 'award' : 'clock',
+            }));
+          } else {
+            console.warn("Failed to fetch activity:", activityResponse.statusText);
+          }
+        } catch (error) {
+          console.warn("Activity API error:", error);
+        }
+
+        // Use mock data for activity if API failed
+        const mockActivityData = [
+          {
+            id: "act1",
+            type: "lesson_completed",
+            course: "JavaScript Fundamentals",
+            detail: "Variables and Data Types",
+            date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+            icon: "check",
+          },
+          {
+            id: "act2",
+            type: "course_started",
+            course: "React - The Complete Guide",
+            detail: "",
+            date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+            icon: "play",
+          },
+          {
+            id: "act3",
+            type: "certificate_earned",
+            course: "HTML & CSS Bootcamp",
+            detail: "",
+            date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+            icon: "award",
+          },
+        ];
+        
+        const finalActivityData = activityData.length > 0 ? activityData : mockActivityData;
 
         // Transform the API data into the expected dashboard data structure
         const transformedData = {
@@ -88,11 +239,11 @@ export default function StudentDashboard() {
           totalHoursLearned: calculateTotalHours(enrollmentsData || []),
           certificatesEarned:
             enrollmentsData?.filter((e) => e.certificateIssued).length || 0,
-          inProgressCourses: enrollmentsData || [],
-          recentActivity: activityData || [],
-          upcomingEvents: [],
-          recommendedCourses: [],
-          achievements: [],
+          inProgressCourses: enrollmentsData?.length > 0 ? enrollmentsData : getMockCourses(),
+          recentActivity: finalActivityData,
+          upcomingEvents: getMockEvents(),
+          recommendedCourses: getMockRecommendations(),
+          achievements: getMockAchievements(),
         };
 
         setDashboardData(transformedData);
@@ -101,61 +252,18 @@ export default function StudentDashboard() {
         console.error("Error fetching dashboard data:", error);
         // Use mock data on error
         setDashboardData({
-          enrolledCourses: 5,
-          completedCourses: 2,
-          totalHoursLearned: 27,
-          certificatesEarned: 2,
-          inProgressCourses: [
-            {
-              id: "course1",
-              title: "JavaScript Fundamentals",
-              slug: "javascript-fundamentals",
-              progress: 65,
-              image: "/images/course-js.jpg",
-              thumbnail:
-                "https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-              instructor: "John Doe",
-              lastAccessed: "2023-10-14T00:00:00.000Z",
-              totalLessons: 24,
-              completedLessons: 16,
-              nextLesson: "Functions and Scope",
-            },
-            {
-              id: "course2",
-              title: "React - The Complete Guide",
-              slug: "react-complete-guide",
-              progress: 32,
-              image: "/images/course-react.jpg",
-              thumbnail:
-                "https://images.unsplash.com/photo-1633356122102-3fe601e05bd2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-              instructor: "Jane Smith",
-              lastAccessed: "2023-10-12T00:00:00.000Z",
-              totalLessons: 42,
-              completedLessons: 13,
-              nextLesson: "State and Props",
-            },
-            {
-              id: "course3",
-              title: "Node.js API Masterclass",
-              slug: "nodejs-api-masterclass",
-              progress: 18,
-              image: "/images/course-node.jpg",
-              thumbnail:
-                "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-              instructor: "Mike Johnson",
-              lastAccessed: "2023-10-10T00:00:00.000Z",
-              totalLessons: 36,
-              completedLessons: 6,
-              nextLesson: "Express Middleware",
-            },
-          ],
+          enrolledCourses: 2,
+          completedCourses: 0,
+          totalHoursLearned: 15.5,
+          certificatesEarned: 0,
+          inProgressCourses: getMockCourses(),
           recentActivity: [
             {
               id: "act1",
               type: "lesson_completed",
               course: "JavaScript Fundamentals",
               detail: "Variables and Data Types",
-              date: "2023-10-15T00:00:00.000Z",
+              date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
               icon: "check",
             },
             {
@@ -163,104 +271,20 @@ export default function StudentDashboard() {
               type: "course_started",
               course: "React - The Complete Guide",
               detail: "",
-              date: "2023-10-12T00:00:00.000Z",
+              date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
               icon: "play",
             },
-            {
-              id: "act3",
-              type: "certificate_earned",
-              course: "HTML & CSS Bootcamp",
-              detail: "",
-              date: "2023-10-05T00:00:00.000Z",
-              icon: "award",
-            },
-            {
-              id: "act4",
-              type: "quiz_passed",
-              course: "JavaScript Fundamentals",
-              detail: "Functions and Objects Quiz",
-              date: "2023-10-14T00:00:00.000Z",
-              icon: "check",
-            },
-            {
-              id: "act5",
-              type: "feedback_received",
-              course: "React - The Complete Guide",
-              detail: "Your project received feedback",
-              date: "2023-10-11T00:00:00.000Z",
-              icon: "message",
-            },
           ],
-          upcomingEvents: [
-            {
-              id: "event1",
-              title: "Live Q&A Session",
-              course: "JavaScript Fundamentals",
-              date: "2023-10-18T18:00:00.000Z",
-              type: "webinar",
-            },
-            {
-              id: "event2",
-              title: "Project Submission Deadline",
-              course: "React - The Complete Guide",
-              date: "2023-10-25T23:59:00.000Z",
-              type: "deadline",
-            },
-            {
-              id: "event3",
-              title: "Group Discussion",
-              course: "Node.js API Masterclass",
-              date: "2023-10-20T17:00:00.000Z",
-              type: "discussion",
-            },
-          ],
-          recommendedCourses: [
-            {
-              id: "rec1",
-              title: "Advanced JavaScript Concepts",
-              slug: "advanced-javascript",
-              thumbnail:
-                "https://images.unsplash.com/photo-1627398242454-45a1465c2479?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-              instructor: "John Doe",
-              rating: 4.8,
-              reviewCount: 325,
-              level: "Advanced",
-            },
-            {
-              id: "rec2",
-              title: "Redux for React Developers",
-              slug: "redux-react-developers",
-              thumbnail:
-                "https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-              instructor: "Jane Smith",
-              rating: 4.7,
-              reviewCount: 218,
-              level: "Intermediate",
-            },
-          ],
-          achievements: [
-            {
-              id: "ach1",
-              title: "Fast Learner",
-              description: "Completed 5 lessons in one day",
-              date: "2023-10-15T00:00:00.000Z",
-              icon: "zap",
-            },
-            {
-              id: "ach2",
-              title: "Perfect Score",
-              description: "Achieved 100% on a quiz",
-              date: "2023-10-08T00:00:00.000Z",
-              icon: "award",
-            },
-          ],
+          upcomingEvents: getMockEvents(),
+          recommendedCourses: getMockRecommendations(),
+          achievements: getMockAchievements(),
         });
         setIsLoading(false);
       }
     };
 
     fetchDashboardData();
-  }, [user, router]);
+  }, [user, authLoading, isStudent, router]);
 
   // Helper function to calculate total hours learned from enrollments
   const calculateTotalHours = (enrollments) => {
@@ -306,8 +330,11 @@ export default function StudentDashboard() {
       {/* Welcome Section */}
       <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold">
-            Welcome back, {user?.displayName || "Student"}
+          <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-3">
+            Welcome back, {profile?.name || user?.email?.split('@')[0] || "Student"}
+            <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
+              Student
+            </Badge>
           </h1>
           <p className="text-slate-600 dark:text-slate-400 mt-1">
             Continue your learning journey and track your progress
@@ -424,6 +451,60 @@ export default function StudentDashboard() {
             </Link>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Quick Actions Section */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Link href="/courses">
+            <Card className="hover:shadow-lg transition-all cursor-pointer border-blue-200 hover:border-blue-300">
+              <CardContent className="p-4 text-center">
+                <div className="bg-blue-100 dark:bg-blue-900 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <BookOpen className="h-6 w-6 text-blue-600 dark:text-blue-300" />
+                </div>
+                <h3 className="font-medium text-sm">Browse Courses</h3>
+                <p className="text-xs text-slate-500 mt-1">Discover new learning opportunities</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/dashboard/student/courses">
+            <Card className="hover:shadow-lg transition-all cursor-pointer border-green-200 hover:border-green-300">
+              <CardContent className="p-4 text-center">
+                <div className="bg-green-100 dark:bg-green-900 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <GraduationCap className="h-6 w-6 text-green-600 dark:text-green-300" />
+                </div>
+                <h3 className="font-medium text-sm">My Courses</h3>
+                <p className="text-xs text-slate-500 mt-1">View your enrolled courses</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/certificates">
+            <Card className="hover:shadow-lg transition-all cursor-pointer border-purple-200 hover:border-purple-300">
+              <CardContent className="p-4 text-center">
+                <div className="bg-purple-100 dark:bg-purple-900 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Award className="h-6 w-6 text-purple-600 dark:text-purple-300" />
+                </div>
+                <h3 className="font-medium text-sm">Certificates</h3>
+                <p className="text-xs text-slate-500 mt-1">View your achievements</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/profile">
+            <Card className="hover:shadow-lg transition-all cursor-pointer border-amber-200 hover:border-amber-300">
+              <CardContent className="p-4 text-center">
+                <div className="bg-amber-100 dark:bg-amber-900 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <BarChart className="h-6 w-6 text-amber-600 dark:text-amber-300" />
+                </div>
+                <h3 className="font-medium text-sm">Profile</h3>
+                <p className="text-xs text-slate-500 mt-1">Update your information</p>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
       </div>
 
       {/* Main Dashboard Content */}

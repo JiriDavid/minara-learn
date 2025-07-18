@@ -33,7 +33,7 @@ export async function PATCH(request) {
     }
 
     // Validate the new role
-    const validRoles = ['student', 'lecturer', 'admin'];
+    const validRoles = ['student', 'instructor', 'admin'];
     if (!validRoles.includes(newRole)) {
       return NextResponse.json(
         { message: "Invalid role" },

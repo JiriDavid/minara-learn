@@ -50,7 +50,7 @@ import {
 export default function LecturerDashboard() {
   const router = useRouter();
   const { user } = useAuth();
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState({
     totalCourses: 0,
     totalStudents: 0,
@@ -63,7 +63,6 @@ export default function LecturerDashboard() {
     pendingTasks: [],
     upcomingSchedule: [],
   });
-  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalCourses: 0,
     publishedCourses: 0,
@@ -77,30 +76,43 @@ export default function LecturerDashboard() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        if (!user) return;
+        console.log("Lecturer dashboard: Starting fetchDashboardData");
+        console.log("User:", user);
+        
+        if (!user) {
+          console.log("No user found, returning early");
+          return;
+        }
 
-        setIsLoading(true);
+        setLoading(true);
 
         // Fetch user data to confirm role
+        console.log("Fetching user data...");
         const userResponse = await fetch("/api/users/me");
         const userData = await userResponse.json();
+        console.log("User data response:", userData);
 
-        if (!userData.success || userData.data?.role !== "lecturer") {
+        if (!userData.success || userData.data?.role !== "instructor") {
+          console.log("User not instructor or request failed, redirecting to dashboard");
           router.push("/dashboard");
           return;
         }
 
         // Fetch lecturer's courses
+        console.log("Fetching courses...");
         const coursesResponse = await fetch("/api/courses/lecturer");
         const coursesData = await coursesResponse.json();
+        console.log("Courses response:", coursesData);
 
         if (!coursesData.success) {
           throw new Error("Failed to fetch courses");
         }
 
         // Fetch course stats (enrollments, completions, ratings)
+        console.log("Fetching stats...");
         const statsResponse = await fetch("/api/lecturer/stats");
         const statsData = await statsResponse.json();
+        console.log("Stats response:", statsData);
 
         // Process the data to create the dashboard data
         const courses = coursesData.data || [];
@@ -217,14 +229,14 @@ export default function LecturerDashboard() {
         }
       } catch (error) {
         console.error("Error fetching lecturer dashboard data:", error);
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
     fetchDashboardData();
   }, [user, router]);
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600"></div>

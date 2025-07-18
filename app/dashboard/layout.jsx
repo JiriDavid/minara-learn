@@ -165,7 +165,7 @@ export default function DashboardLayout({ children }) {
       );
     }
 
-    if (role === "lecturer") {
+    if (role === "instructor") {
       items.push(
         {
           title: "My Courses",

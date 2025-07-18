@@ -536,7 +536,13 @@ export default function AdminDashboard() {
             Manage your platform, users, and courses
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
+          <Link href="/dashboard/admin/instructor-applications">
+            <Button className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700">
+              <GraduationCap className="h-4 w-4" />
+              <span>Instructor Applications</span>
+            </Button>
+          </Link>
           <Link href="/dashboard/admin/users/new">
             <Button className="flex items-center gap-2">
               <UserPlus className="h-4 w-4" />

@@ -14,7 +14,7 @@ export async function POST(request) {
     }
 
     // Validate role
-    const validRoles = ["student", "lecturer", "admin"];
+    const validRoles = ["student", "instructor", "admin"];
     if (!validRoles.includes(role)) {
       return NextResponse.json(
         { success: false, message: "Invalid role" },
@@ -61,7 +61,7 @@ export async function POST(request) {
     const { error: profileError } = await supabase.from("profiles").insert({
       id: authData.user.id,
       email,
-      name,
+      name: name, // Use name field
       role,
       avatar_url: null,
       bio: null,

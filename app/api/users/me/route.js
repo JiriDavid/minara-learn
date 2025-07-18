@@ -53,7 +53,7 @@ export async function GET() {
       success: true,
       data: {
         id: profile.id,
-        name: profile.name,
+        name: profile.name, // Use name from schema
         email: user.email,
         role: profile.role,
         image: profile.avatar_url,

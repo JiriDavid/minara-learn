@@ -11,6 +11,22 @@ export async function POST(req, { params }) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    // Get user profile to check role
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || !profile) {
+      return new NextResponse("Profile not found", { status: 404 });
+    }
+
+    // Only students can enroll in courses
+    if (profile.role !== 'student') {
+      return new NextResponse("Only students can enroll in courses", { status: 403 });
+    }
+
     const { slug } = params;
 
     // Get the course
@@ -43,7 +59,7 @@ export async function POST(req, { params }) {
         {
           user_id: user.id,
           course_id: course.id,
-          status: "in-progress",
+          status: "active",
           progress: 0,
         }
       ])

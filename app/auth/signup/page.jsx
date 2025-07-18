@@ -19,6 +19,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function SignUp() {
   const router = useRouter();
@@ -30,6 +37,7 @@ export default function SignUp() {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -37,6 +45,7 @@ export default function SignUp() {
       email: "",
       password: "",
       confirmPassword: "",
+      role: "student",
       agreeToTerms: false,
     },
   });
@@ -58,23 +67,45 @@ export default function SignUp() {
       // Remove confirmPassword and agreeToTerms from data before sending to API
       const { confirmPassword, agreeToTerms, ...userData } = data;
 
-      const supabase = createClient();
-      const { error } = await supabase.auth.signUp({
-        email: userData.email,
-        password: userData.password,
-        options: {
-          data: {
-            name: userData.name,
-            role: userData.role || 'student',
-          },
+      // Check if user selected instructor role - redirect to instructor signup
+      if (userData.role === 'instructor') {
+        router.push('/auth/instructor-signup');
+        return;
+      }
+
+      // Use the API route for signup to handle profile creation properly
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          name: userData.name,
+          email: userData.email,
+          password: userData.password,
+          role: userData.role || 'student'
+        })
       });
 
-      if (!error) {
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log("Account created successfully");
         toast.success("Account created successfully! Please check your email for verification.");
         router.push("/auth/signin");
       } else {
-        toast.error(error.message || "Failed to create account. Please try again.");
+        console.error("Signup API error:", result.error);
+        
+        // Handle specific error cases
+        if (result.code === "USER_EXISTS") {
+          toast.error("An account with this email already exists. Please try signing in instead.");
+          // Optionally redirect to signin page
+          setTimeout(() => {
+            router.push("/auth/signin?email=" + encodeURIComponent(userData.email));
+          }, 2000);
+        } else {
+          toast.error(result.error || "Failed to create account. Please try again.");
+        }
       }
     } catch (error) {
       console.error("Registration error:", error);
@@ -306,6 +337,32 @@ export default function SignUp() {
                   </p>
                 )}
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="role"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                I am a
+              </label>
+              <Select
+                onValueChange={(value) => setValue("role", value)}
+                defaultValue="student"
+                disabled={isLoading}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select your role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="student">Student</SelectItem>
+                  <SelectItem value="instructor">Instructor</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Choose your role to get the appropriate access and features
+              </p>
             </div>
 
             <div className="flex items-center space-x-2">

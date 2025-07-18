@@ -60,29 +60,29 @@ export default function CoursePageClient({ course }) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         <div className="lg:col-span-2">
           <div className="mb-4">
-            <Badge variant="outline" className="mb-4 text-white border-white">
+            <Badge variant="outline" className="mb-4 ">
               {category}
             </Badge>
-            <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-white">{title}</h1>
-            <p className="text-gray-200 mb-6">
+            <h1 className="text-3xl sm:text-4xl font-bold mb-4">{title}</h1>
+            <p className="text-gray-600 mb-6">
               {description.substring(0, 300)}...
             </p>
 
             <div className="flex flex-wrap gap-4 mb-6">
               <div className="flex items-center">
                 <Star className="h-5 w-5 text-yellow-500 mr-1" />
-                <span className="font-bold text-gray-300">{ratings?.average || "New"}</span>
+                <span className="font-bold text-gray-600">{ratings?.average || "New"}</span>
                 <span className="text-muted-foreground ml-1">
                   ({ratings?.count || 0} ratings)
                 </span>
               </div>
               <div className="flex items-center">
                 <Users className="h-5 w-5 text-blue-500 mr-1" />
-                <span className="text-gray-300">{enrollmentCount || 0} students</span>
+                <span className="text-gray-600">{enrollmentCount || 0} students</span>
               </div>
               <div className="flex items-center">
                 <Calendar className="h-5 w-5 text-green-500 mr-1" />
-                <span className="text-gray-300">
+                <span className="text-gray-600">
                   Last updated {new Date(publishedAt).toLocaleDateString()}
                 </span>
               </div>
