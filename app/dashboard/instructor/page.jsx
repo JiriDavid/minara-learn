@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo, useCallback, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -46,11 +46,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PageLoader, CardSkeleton } from "@/components/ui/loading";
 
-export default function LecturerDashboard() {
+const InstructorDashboard = memo(() => {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading, isInstructor } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [dataFetched, setDataFetched] = useState(false);
   const [dashboardData, setDashboardData] = useState({
     totalCourses: 0,
     totalStudents: 0,
@@ -73,34 +75,29 @@ export default function LecturerDashboard() {
   });
   const [courses, setCourses] = useState([]);
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        console.log("Lecturer dashboard: Starting fetchDashboardData");
-        console.log("User:", user);
-        
-        if (!user) {
-          console.log("No user found, returning early");
-          return;
-        }
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      console.log("🎯 Instructor dashboard: Starting fetchDashboardData");
+      console.log("🔍 Current state:", { user: !!user, authLoading, isInstructor, dataFetched });
+      
+      if (!user || authLoading || dataFetched) {
+        console.log("⏹️ Exiting early - conditions not met");
+        return;
+      }
 
-        setLoading(true);
+      if (!isInstructor) {
+        console.log("❌ User not instructor, redirecting to dashboard");
+        router.push("/dashboard");
+        return;
+      }
 
-        // Fetch user data to confirm role
-        console.log("Fetching user data...");
-        const userResponse = await fetch("/api/users/me");
-        const userData = await userResponse.json();
-        console.log("User data response:", userData);
+      console.log("✅ Starting data fetch for instructor:", user.email);
+      setLoading(true);
+      setDataFetched(true);
 
-        if (!userData.success || userData.data?.role !== "instructor") {
-          console.log("User not instructor or request failed, redirecting to dashboard");
-          router.push("/dashboard");
-          return;
-        }
-
-        // Fetch lecturer's courses
+        // Fetch instructor's courses
         console.log("Fetching courses...");
-        const coursesResponse = await fetch("/api/courses/lecturer");
+        const coursesResponse = await fetch("/api/courses/instructor");
         const coursesData = await coursesResponse.json();
         console.log("Courses response:", coursesData);
 
@@ -110,7 +107,7 @@ export default function LecturerDashboard() {
 
         // Fetch course stats (enrollments, completions, ratings)
         console.log("Fetching stats...");
-        const statsResponse = await fetch("/api/lecturer/stats");
+        const statsResponse = await fetch("/api/instructor/stats");
         const statsData = await statsResponse.json();
         console.log("Stats response:", statsData);
 
@@ -228,29 +225,23 @@ export default function LecturerDashboard() {
           setLoading(false);
         }
       } catch (error) {
-        console.error("Error fetching lecturer dashboard data:", error);
+        console.error("Error fetching instructor dashboard data:", error);
         setLoading(false);
+        setDataFetched(false); // Allow retry on error
       }
-    };
+    }, [user, authLoading, isInstructor, dataFetched]);
 
+  useEffect(() => {
     fetchDashboardData();
-  }, [user, router]);
+  }, [fetchDashboardData]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600"></div>
-      </div>
-    );
-  }
-
-  // Format date in a readable way
-  const formatDate = (dateString) => {
+  // Format date in a readable way - moved before conditional return
+  const formatDate = useCallback((dateString) => {
     const options = { year: "numeric", month: "short", day: "numeric" };
     return new Date(dateString).toLocaleDateString(undefined, options);
-  };
+  }, []);
 
-  const formatDateTime = (dateString) => {
+  const formatDateTime = useCallback((dateString) => {
     return new Date(dateString).toLocaleString(undefined, {
       weekday: "short",
       month: "short",
@@ -258,7 +249,29 @@ export default function LecturerDashboard() {
       hour: "2-digit",
       minute: "2-digit",
     });
-  };
+  }, []);
+
+  // Show page loader while auth is loading or initial data loading
+  if (authLoading) {
+    return <PageLoader message="Loading instructor dashboard..." />;
+  }
+
+  // If user is not authenticated, redirect to signin
+  if (!user) {
+    router.push('/auth/signin');
+    return <PageLoader message="Redirecting to sign in..." />;
+  }
+
+  // If user is not an instructor, redirect to main dashboard
+  if (!isInstructor) {
+    router.push('/dashboard');
+    return <PageLoader message="Redirecting to dashboard..." />;
+  }
+
+  // Show loading state for data
+  if (loading && !dataFetched) {
+    return <PageLoader message="Loading instructor dashboard..." />;
+  }
 
   return (
     <div className="container py-8">
@@ -273,7 +286,7 @@ export default function LecturerDashboard() {
           </p>
         </div>
         <div className="flex gap-3">
-          <Link href="/dashboard/lecturer/courses/create">
+          <Link href="/dashboard/instructor/courses/create">
             <Button className="flex items-center gap-2">
               <PlusCircle className="h-4 w-4" />
               <span>Create New Course</span>
@@ -376,7 +389,7 @@ export default function LecturerDashboard() {
           <div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold">Your Courses</h2>
-              <Link href="/dashboard/lecturer/courses">
+              <Link href="/dashboard/instructor/courses">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -447,7 +460,7 @@ export default function LecturerDashboard() {
 
                       <div className="mt-4 flex flex-wrap items-center gap-2">
                         <Link
-                          href={`/dashboard/lecturer/courses/${
+                          href={`/dashboard/instructor/courses/${
                             course._id || course.id
                           }`}
                         >
@@ -461,7 +474,7 @@ export default function LecturerDashboard() {
                           </Button>
                         </Link>
                         <Link
-                          href={`/dashboard/lecturer/courses/${
+                          href={`/dashboard/instructor/courses/${
                             course._id || course.id
                           }/edit`}
                         >
@@ -475,7 +488,7 @@ export default function LecturerDashboard() {
                           </Button>
                         </Link>
                         <Link
-                          href={`/dashboard/lecturer/courses/${
+                          href={`/dashboard/instructor/courses/${
                             course._id || course.id
                           }/analytics`}
                         >
@@ -504,7 +517,7 @@ export default function LecturerDashboard() {
                     Start creating your first course to share your knowledge
                     with students
                   </p>
-                  <Link href="/dashboard/lecturer/courses/create">
+                  <Link href="/dashboard/instructor/courses/create">
                     <Button>
                       <PlusCircle className="mr-2 h-4 w-4" />
                       Create Your First Course
@@ -625,7 +638,7 @@ export default function LecturerDashboard() {
               </CardContent>
               <CardFooter className="bg-slate-50 dark:bg-slate-800 p-4">
                 <Link
-                  href="/dashboard/lecturer/tasks"
+                  href="/dashboard/instructor/tasks"
                   className="text-blue-600 hover:underline text-sm flex items-center mx-auto"
                 >
                   View all tasks <ChevronRight className="h-4 w-4 ml-1" />
@@ -672,7 +685,7 @@ export default function LecturerDashboard() {
               </CardContent>
               <CardFooter className="bg-slate-50 dark:bg-slate-800 p-4">
                 <Link
-                  href="/dashboard/lecturer/calendar"
+                  href="/dashboard/instructor/calendar"
                   className="text-blue-600 hover:underline text-sm flex items-center mx-auto"
                 >
                   View full calendar <ChevronRight className="h-4 w-4 ml-1" />
@@ -729,7 +742,7 @@ export default function LecturerDashboard() {
               </CardContent>
               <CardFooter className="bg-slate-50 dark:bg-slate-800 p-4">
                 <Link
-                  href="/dashboard/lecturer/reviews"
+                  href="/dashboard/instructor/reviews"
                   className="text-blue-600 hover:underline text-sm flex items-center mx-auto"
                 >
                   View all reviews <ChevronRight className="h-4 w-4 ml-1" />
@@ -741,4 +754,8 @@ export default function LecturerDashboard() {
       </div>
     </div>
   );
-}
+});
+
+InstructorDashboard.displayName = 'InstructorDashboard';
+
+export default InstructorDashboard;

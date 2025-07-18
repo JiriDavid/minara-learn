@@ -43,8 +43,8 @@ export default function CourseLearnPage({ params }) {
           title: "JavaScript Fundamentals",
           description:
             "Learn the fundamentals of JavaScript programming language.",
-          lecturerId: "lecturer123",
-          lecturerName: "John Doe",
+          instructorId: "instructor123",
+          instructorName: "John Doe",
           sections: [
             {
               _id: "section1",

@@ -182,11 +182,11 @@ const Footer = () => {
               </p>
               <p className="text-slate-400">
                 <a
-                  href="mailto:info@extratlms.com"
+                  href="mailto:info@minaralearn.com"
                   className="flex items-center mt-2 hover:text-blue-400 transition-colors"
                 >
                   <Mail size={16} className="mr-2" />
-                  info@extratlms.com
+                  info@minaralearn.com
                 </a>
               </p>
             </address>
@@ -195,7 +195,7 @@ const Footer = () => {
 
         <div className="mt-12 pt-8 border-t border-slate-800 text-center">
           <p className="text-sm text-slate-400">
-            &copy; {currentYear} E-Xtra LMS. All rights reserved.
+            &copy; {currentYear} Minara Learn. All rights reserved.
           </p>
         </div>
       </div>

@@ -52,34 +52,34 @@ export default function SystemTestPage() {
       category: 'User Management'
     },
     {
-      id: 'courses_lecturer',
-      name: 'Lecturer Courses API',
-      description: 'Test lecturer courses endpoint',
-      endpoint: '/api/courses/lecturer',
+      id: 'courses_instructor',
+      name: 'Instructor Courses API',
+      description: 'Test instructor courses endpoint',
+      endpoint: '/api/courses/instructor',
       category: 'Course Management',
       requiresRole: 'instructor'
     },
     {
-      id: 'lecturer_stats',
-      name: 'Lecturer Stats API',
-      description: 'Test lecturer statistics endpoint',
-      endpoint: '/api/lecturer/stats',
+      id: 'instructor_stats',
+      name: 'Instructor Stats API',
+      description: 'Test instructor statistics endpoint',
+      endpoint: '/api/instructor/stats',
       category: 'Analytics',
       requiresRole: 'instructor'
     },
     {
-      id: 'lecturer_students',
-      name: 'Lecturer Students API',
-      description: 'Test lecturer students endpoint',
-      endpoint: '/api/lecturer/students',
+      id: 'instructor_students',
+      name: 'Instructor Students API',
+      description: 'Test instructor students endpoint',
+      endpoint: '/api/instructor/students',
       category: 'Student Management',
       requiresRole: 'instructor'
     },
     {
-      id: 'lecturer_calendar',
-      name: 'Lecturer Calendar API',
-      description: 'Test lecturer calendar endpoint',
-      endpoint: '/api/lecturer/calendar',
+      id: 'instructor_calendar',
+      name: 'Instructor Calendar API',
+      description: 'Test instructor calendar endpoint',
+      endpoint: '/api/instructor/calendar',
       category: 'Scheduling',
       requiresRole: 'instructor'
     },
@@ -118,31 +118,31 @@ export default function SystemTestPage() {
       requiresRole: 'student'
     },
     {
-      id: 'dashboard_lecturer',
-      name: 'Lecturer Dashboard',
-      path: '/dashboard/lecturer',
-      description: 'Lecturer dashboard page',
+      id: 'dashboard_instructor',
+      name: 'Instructor Dashboard',
+      path: '/dashboard/instructor',
+      description: 'Instructor dashboard page',
       requiresRole: 'instructor'
     },
     {
-      id: 'lecturer_courses',
-      name: 'Lecturer Courses',
-      path: '/dashboard/lecturer/courses',
-      description: 'Lecturer courses management',
+      id: 'instructor_courses',
+      name: 'Instructor Courses',
+      path: '/dashboard/instructor/courses',
+      description: 'Instructor courses management',
       requiresRole: 'instructor'
     },
     {
-      id: 'lecturer_students',
-      name: 'Lecturer Students',
-      path: '/dashboard/lecturer/students',
-      description: 'Lecturer students management',
+      id: 'instructor_students',
+      name: 'Instructor Students',
+      path: '/dashboard/instructor/students',
+      description: 'Instructor students management',
       requiresRole: 'instructor'
     },
     {
-      id: 'lecturer_calendar',
-      name: 'Lecturer Calendar',
-      path: '/dashboard/lecturer/calendar',
-      description: 'Lecturer calendar and scheduling',
+      id: 'instructor_calendar',
+      name: 'Instructor Calendar',
+      path: '/dashboard/instructor/calendar',
+      description: 'Instructor calendar and scheduling',
       requiresRole: 'instructor'
     },
     {

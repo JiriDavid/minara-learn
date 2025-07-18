@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 
 export async function GET() {
   try {
+    console.log("🔍 /api/users/me called");
     const cookieStore = await cookies();
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -29,11 +30,14 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      console.log("❌ Auth error in /api/users/me:", authError?.message);
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
         { status: 401 }
       );
     }
+
+    console.log("✅ User authenticated:", user.email);
 
     // Get user profile from profiles table
     const { data: profile, error: profileError } = await supabase
@@ -43,11 +47,14 @@ export async function GET() {
       .single();
 
     if (profileError || !profile) {
+      console.log("❌ Profile error:", profileError?.message);
       return NextResponse.json(
         { success: false, message: "User not found" },
         { status: 404 }
       );
     }
+
+    console.log("👤 Profile data:", { id: profile.id, role: profile.role, name: profile.name });
 
     return NextResponse.json({
       success: true,

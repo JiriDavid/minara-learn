@@ -1,15 +1,15 @@
-# E-X-TRA Learning Management System
+# Minara Learn Learning Management System
 
 A modern, responsive Learning Management System built with Next.js, MongoDB, and Clerk for authentication.
 
 ## Features
 
 - **Authentication**: Secure user authentication with Clerk, including social logins, email verification, and more
-- **Role-based Access**: Different dashboards and features for students, lecturers, and administrators
+- **Role-based Access**: Different dashboards and features for students, instructors, and administrators
 - **Course Management**: Create, edit, and publish courses with rich content
 - **Curriculum Builder**: Organize courses into sections and lessons
 - **Student Dashboard**: Track progress, view enrolled courses, and access learning resources
-- **Lecturer Dashboard**: Manage courses, track student performance, and create content
+- **Instructor Dashboard**: Manage courses, track student performance, and create content
 - **Admin Dashboard**: Manage users, view site analytics, and oversee all courses
 - **Responsive Design**: Fully responsive layout that works on mobile, tablet, and desktop
 
@@ -36,8 +36,8 @@ A modern, responsive Learning Management System built with Next.js, MongoDB, and
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/e-x-tra-lms.git
-   cd e-x-tra-lms
+   git clone https://github.com/yourusername/minara-learn.git
+   cd minara-learn
    ```
 
 2. Install dependencies:
@@ -82,13 +82,13 @@ A modern, responsive Learning Management System built with Next.js, MongoDB, and
 ## Project Structure
 
 ```
-e-x-tra-lms/
+minara-learn/
 ├── app/
 │   ├── api/                  # API routes
 │   ├── components/           # Shared components
 │   ├── dashboard/            # Dashboard pages
 │   │   ├── admin/            # Admin dashboard
-│   │   ├── lecturer/         # Lecturer dashboard
+│   │   ├── instructor/       # Instructor dashboard
 │   │   └── student/          # Student dashboard
 │   ├── learn/                # Course learning pages
 │   ├── lib/                  # Utility functions and helpers
@@ -120,7 +120,7 @@ The application uses the following main models:
 The application supports three user roles:
 
 - **Student**: Can browse courses, enroll, track progress, and access learning materials
-- **Lecturer**: Can create and manage courses, track student progress, and view analytics
+- **Instructor**: Can create and manage courses, track student progress, and view analytics
 - **Admin**: Has full access to all features and can manage users and system settings
 
 ## Deployment

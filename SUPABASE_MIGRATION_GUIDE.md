@@ -1,6 +1,6 @@
 # Clerk to Supabase Migration Guide
 
-This guide provides the steps to fully migrate authentication from Clerk to Supabase in the E-X-TRA LMS application.
+This guide provides the steps to fully migrate authentication from Clerk to Supabase in the Minara Learn application.
 
 ## What's Already Done
 

@@ -41,7 +41,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export default function LecturerCalendarPage() {
+export default function InstructorCalendarPage() {
   const { user, isInstructor } = useAuth();
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState([]);
@@ -71,7 +71,7 @@ export default function LecturerCalendarPage() {
       setLoading(true);
 
       // Fetch instructor's courses
-      const coursesResponse = await fetch("/api/courses/lecturer");
+      const coursesResponse = await fetch("/api/courses/instructor");
       const coursesData = await coursesResponse.json();
       
       if (coursesData.success) {
@@ -79,7 +79,7 @@ export default function LecturerCalendarPage() {
       }
 
       // Fetch calendar events
-      const eventsResponse = await fetch(`/api/lecturer/calendar?month=${selectedDate.getMonth() + 1}&year=${selectedDate.getFullYear()}`);
+      const eventsResponse = await fetch(`/api/instructor/calendar?month=${selectedDate.getMonth() + 1}&year=${selectedDate.getFullYear()}`);
       const eventsData = await eventsResponse.json();
       
       if (eventsData.success) {
@@ -94,7 +94,7 @@ export default function LecturerCalendarPage() {
 
   const handleCreateEvent = async () => {
     try {
-      const response = await fetch("/api/lecturer/calendar", {
+      const response = await fetch("/api/instructor/calendar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newEvent),

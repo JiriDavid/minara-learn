@@ -13,7 +13,7 @@ const CourseCard = ({ course }) => {
     thumbnail,
     price,
     ratings,
-    lecturer,
+    instructor,
     totalDuration,
     totalLessons,
     level,
@@ -79,9 +79,9 @@ const CourseCard = ({ course }) => {
           </span>
         </div>
 
-        {lecturer && (
+        {instructor && (
           <div className="text-sm text-slate-500 dark:text-slate-400">
-            <span>By {lecturer.name}</span>
+            <span>By {instructor.name}</span>
           </div>
         )}
       </CardContent>

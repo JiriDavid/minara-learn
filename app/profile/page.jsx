@@ -402,7 +402,7 @@ export default function ProfilePage() {
                               handleSelectChange(value, "role")
                             }
                             disabled={
-                              profileData.role !== "lecturer" &&
+                              profileData.role !== "instructor" &&
                               profileData.role !== "admin"
                             }
                           >
@@ -411,7 +411,7 @@ export default function ProfilePage() {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="student">Student</SelectItem>
-                              <SelectItem value="lecturer">Lecturer</SelectItem>
+                              <SelectItem value="instructor">Instructor</SelectItem>
                               <SelectItem value="admin">Admin</SelectItem>
                             </SelectContent>
                           </Select>

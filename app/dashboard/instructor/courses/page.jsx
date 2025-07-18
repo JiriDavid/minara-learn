@@ -88,13 +88,13 @@ export default function CourseManagement() {
         const userResponse = await fetch("/api/users/me");
         const userData = await userResponse.json();
 
-        if (!userData.success || userData.data?.role !== "lecturer") {
+        if (!userData.success || userData.data?.role !== "instructor") {
           router.push("/dashboard");
           return;
         }
 
-        // Fetch lecturer's courses
-        const coursesResponse = await fetch("/api/courses/lecturer");
+        // Fetch instructor's courses
+        const coursesResponse = await fetch("/api/courses/instructor");
         const coursesData = await coursesResponse.json();
 
         if (!coursesData.success) {
@@ -255,7 +255,7 @@ export default function CourseManagement() {
     <div className="p-6">
       <div className="mb-8">
         <Link
-          href="/dashboard/lecturer"
+          href="/dashboard/instructor"
           className="flex items-center text-sm text-muted-foreground mb-6 hover:text-primary transition-colors"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -268,7 +268,7 @@ export default function CourseManagement() {
             <p className="text-muted-foreground">Manage your course catalog</p>
           </div>
           <div className="mt-4 md:mt-0">
-            <Link href="/dashboard/lecturer/courses/create">
+            <Link href="/dashboard/instructor/courses/create">
               <Button>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Create New Course
@@ -346,7 +346,7 @@ export default function CourseManagement() {
                 Clear Filters
               </Button>
             ) : (
-              <Link href="/dashboard/lecturer/courses/create">
+              <Link href="/dashboard/instructor/courses/create">
                 <Button className="mt-4">
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Create Your First Course
@@ -428,7 +428,7 @@ export default function CourseManagement() {
                           <DropdownMenuItem
                             onClick={() =>
                               router.push(
-                                `/dashboard/lecturer/courses/${course._id}/edit`
+                                `/dashboard/instructor/courses/${course._id}/edit`
                               )
                             }
                           >

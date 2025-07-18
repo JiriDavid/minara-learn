@@ -464,9 +464,9 @@ export default function HomeClient({ courses, stats }) {
                     "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                   category: course.category,
                   instructor: {
-                    name: course.lecturer?.name || "Unknown Instructor",
+                    name: course.instructor?.name || "Unknown Instructor",
                     image:
-                      course.lecturer?.avatar_url ||
+                      course.instructor?.avatar_url ||
                       "https://randomuser.me/api/portraits/men/1.jpg",
                   },
                   rating: course.average_rating || 4.5,

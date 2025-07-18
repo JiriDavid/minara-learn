@@ -77,7 +77,7 @@ export default function StudentCoursesPage() {
                 "Learn the core concepts of JavaScript programming language.",
               thumbnail:
                 "https://placehold.co/600x400/2563eb/FFFFFF/png?text=JavaScript+Fundamentals",
-              lecturer: {
+              instructor: {
                 name: "John Doe",
                 image: "https://placehold.co/150/2563eb/FFFFFF/png?text=JD",
               },
@@ -135,7 +135,7 @@ export default function StudentCoursesPage() {
                 "Learn the basics of React and build your first application.",
               thumbnail:
                 "https://placehold.co/600x400/16a34a/FFFFFF/png?text=React+for+Beginners",
-              lecturer: {
+              instructor: {
                 name: "Jane Smith",
                 image: "https://placehold.co/150/16a34a/FFFFFF/png?text=JS",
               },
@@ -195,7 +195,7 @@ export default function StudentCoursesPage() {
                 "Master the fundamentals of web development with HTML and CSS.",
               thumbnail:
                 "https://placehold.co/600x400/dc2626/FFFFFF/png?text=HTML+%26+CSS+Basics",
-              lecturer: {
+              instructor: {
                 name: "Sarah Johnson",
                 image: "https://placehold.co/150/dc2626/FFFFFF/png?text=SJ",
               },

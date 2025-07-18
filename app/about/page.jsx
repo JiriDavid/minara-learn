@@ -58,7 +58,7 @@ export default function AboutPage() {
           <div className="relative h-[400px] w-full overflow-hidden rounded-xl">
             <Image
               src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-              alt="Students learning with E-X-TRA LMS"
+              alt="Students learning with Minara Learn"
               fill
               className="object-cover rounded-xl"
               priority

@@ -204,7 +204,7 @@ export default function EditCoursePage({ params }) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Redirect to courses page
-      router.push("/dashboard/lecturer/courses");
+      router.push("/dashboard/instructor/courses");
     } catch (error) {
       console.error("Error deleting course:", error);
       alert("Failed to delete course. Please try again.");
@@ -479,7 +479,7 @@ export default function EditCoursePage({ params }) {
                       variant="outline"
                       onClick={() =>
                         router.push(
-                          `/dashboard/lecturer/courses/${params.id}/content`
+                          `/dashboard/instructor/courses/${params.id}/content`
                         )
                       }
                     >

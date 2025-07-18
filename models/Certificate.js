@@ -40,7 +40,7 @@ const CertificateSchema = new mongoose.Schema(
     issuer: {
       name: {
         type: String,
-        default: "E-Xtra LMS",
+        default: "Minara Learn",
       },
       signature: {
         type: String,

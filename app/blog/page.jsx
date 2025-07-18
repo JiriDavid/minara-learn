@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Search, Clock, User, ChevronRight, ArrowRight } from "lucide-react";
 
 export const metadata = {
-  title: "Blog | E-X-TRA LMS",
+  title: "Blog | Minara Learn",
   description:
     "Explore our articles, tutorials, and insights on education, technology, and learning.",
 };
@@ -139,7 +139,7 @@ export default function BlogPage() {
       <div className="container mx-auto px-4 py-16">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">E-X-TRA Blog</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">Minara Learn Blog</h1>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8">
           Insights, guides, and expert perspectives on education, learning
           technologies, and professional development.

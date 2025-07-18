@@ -30,20 +30,6 @@ export async function POST(req) {
 
     const supabase = await createClient();
 
-    // Check if user already exists
-    const { data: existingUser, error: checkError } = await supabase.auth.admin.getUserByEmail(email);
-    
-    if (existingUser && !checkError) {
-      return NextResponse.json(
-        { 
-          error: "User already exists", 
-          message: "An account with this email address already exists. Please try signing in instead.",
-          code: "USER_EXISTS"
-        },
-        { status: 409 }
-      );
-    }
-
     // Sign up the user with metadata
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
@@ -58,7 +44,9 @@ export async function POST(req) {
 
     if (authError) {
       // Handle specific error cases
-      if (authError.message.includes("already registered")) {
+      if (authError.message.includes("already registered") || 
+          authError.message.includes("User already registered") ||
+          authError.message.includes("email address is already in use")) {
         return NextResponse.json(
           { 
             error: "User already exists", 
@@ -69,6 +57,7 @@ export async function POST(req) {
         );
       }
       
+      console.error("Signup error:", authError.message);
       return NextResponse.json(
         { error: authError.message },
         { status: 400 }

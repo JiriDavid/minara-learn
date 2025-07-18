@@ -258,7 +258,7 @@ export default function CreateCourse() {
 
       // Redirect after success
       setTimeout(() => {
-        router.push("/dashboard/lecturer/courses");
+        router.push("/dashboard/instructor/courses");
       }, 2000);
     } catch (error) {
       console.error("Error creating course:", error);
@@ -273,7 +273,7 @@ export default function CreateCourse() {
       {/* Header */}
       <div className="mb-8">
         <Link
-          href="/dashboard/lecturer/courses"
+          href="/dashboard/instructor/courses"
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-1" />
@@ -663,7 +663,7 @@ export default function CreateCourse() {
         {/* Submit */}
         <div className="flex justify-end space-x-4">
           <Link
-            href="/dashboard/lecturer/courses"
+            href="/dashboard/instructor/courses"
             className="px-6 py-2 border border-gray-300 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800"
           >
             Cancel

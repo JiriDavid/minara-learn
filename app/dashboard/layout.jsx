@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -44,6 +44,7 @@ export default function DashboardLayout({ children }) {
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, loading: authLoading, signOut } = useAuth();
+  const lastRoleRef = useRef(null);
   const [notifications, setNotifications] = useState([
     {
       id: 1,
@@ -76,8 +77,11 @@ export default function DashboardLayout({ children }) {
           return;
         }
 
-        const response = await fetch("/api/users/me");
+        // Add cache busting to ensure fresh role data
+        const response = await fetch(`/api/users/me?t=${Date.now()}`);
         const data = await response.json();
+
+        console.log("👤 Dashboard layout - fetched user role:", data);
 
         if (response.status === 401 || !data.success) {
           console.log("Authentication failed, redirecting to login");
@@ -86,11 +90,26 @@ export default function DashboardLayout({ children }) {
         }
 
         if (data.success && data.data?.role) {
-          setRole(data.data.role);
+          const newRole = data.data.role;
+          console.log("📝 Setting role from API:", newRole);
+          
+          // Prevent unnecessary redirects if role hasn't changed
+          if (lastRoleRef.current !== newRole) {
+            lastRoleRef.current = newRole;
+            setRole(newRole);
 
-          // If we're at the base dashboard URL, redirect to the role-specific dashboard
-          if (pathname === "/dashboard") {
-            router.push(`/dashboard/${data.data.role}`);
+            // Only redirect if we're at the base dashboard URL and the current path doesn't match the role
+            if (pathname === "/dashboard") {
+              console.log("🔄 Redirecting from base dashboard to role-specific:", newRole);
+              router.push(`/dashboard/${newRole}`);
+            } else if (!pathname.startsWith(`/dashboard/${newRole}`) && pathname !== "/dashboard") {
+              // If user is on wrong role dashboard, redirect to correct one
+              console.log("🔄 Redirecting from wrong role dashboard:", pathname, "to:", newRole);
+              router.push(`/dashboard/${newRole}`);
+            }
+          } else {
+            // Role is the same, just update state if needed
+            setRole(newRole);
           }
         } else {
           console.error("Invalid user data format:", data);
@@ -109,7 +128,7 @@ export default function DashboardLayout({ children }) {
     if (!authLoading) {
       fetchUserRole();
     }
-  }, [user, authLoading, pathname, router]);
+  }, [user, authLoading, pathname]); // Added pathname to dependencies
 
   useEffect(() => {
     // Close sidebar when route changes on mobile
@@ -169,27 +188,27 @@ export default function DashboardLayout({ children }) {
       items.push(
         {
           title: "My Courses",
-          href: "/dashboard/lecturer/courses",
+          href: "/dashboard/instructor/courses",
           icon: BookOpen,
-          active: pathname === "/dashboard/lecturer/courses",
+          active: pathname === "/dashboard/instructor/courses",
         },
         {
           title: "Create Course",
-          href: "/dashboard/lecturer/courses/create",
+          href: "/dashboard/instructor/courses/create",
           icon: PlusCircle,
-          active: pathname === "/dashboard/lecturer/courses/create",
+          active: pathname === "/dashboard/instructor/courses/create",
         },
         {
           title: "Students",
-          href: "/dashboard/lecturer/students",
+          href: "/dashboard/instructor/students",
           icon: Users,
-          active: pathname === "/dashboard/lecturer/students",
+          active: pathname === "/dashboard/instructor/students",
         },
         {
           title: "Calendar",
-          href: "/dashboard/lecturer/calendar",
+          href: "/dashboard/instructor/calendar",
           icon: Calendar,
-          active: pathname === "/dashboard/lecturer/calendar",
+          active: pathname === "/dashboard/instructor/calendar",
         }
       );
     }
@@ -277,13 +296,13 @@ export default function DashboardLayout({ children }) {
             {/* <div className="mr-3 relative h-10 w-10">
               <Image
                 src="/images/zimsec.png"
-                alt="E-X-TRA LMS"
+                alt="Minara Learn"
                 fill
                 className="object-contain"
               />
             </div> */}
             <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-              E-X-TRA LMS
+              Minara Learn
             </h1>
           </div>
 
@@ -392,7 +411,7 @@ export default function DashboardLayout({ children }) {
         </header>
 
         {/* Main content with scrolling */}
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="flex-1 overflow-y-auto ml-4">{children}</main>
       </div>
     </div>
   );

@@ -59,7 +59,7 @@ export async function getCurrentUser() {
 /**
  * Check if the current user has a specific role
  * This should be used with your database user record, not the Clerk user
- * @param {string} requiredRole The role to check for (e.g., 'admin', 'lecturer')
+ * @param {string} requiredRole The role to check for (e.g., 'admin', 'instructor')
  * @param {Object} dbUser The user object from your database
  * @returns {boolean} Whether the user has the required role
  */

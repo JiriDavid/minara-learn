@@ -95,7 +95,7 @@ export default function ContactPage() {
               Our support team will get back to you within 24 hours.
             </p>
             <a
-              href="mailto:support@extralms.com"
+              href="mailto:support@minaralearn.com"
               className="text-blue-600 hover:underline font-medium"
             >
               support@minaralearn.com
@@ -393,10 +393,10 @@ export default function ContactPage() {
                     For urgent technical issues, our support team is available
                     24/7 via email at{" "}
                     <a
-                      href="mailto:support@extralms.com"
+                      href="mailto:support@minaralearn.com"
                       className="text-blue-600 hover:underline"
                     >
-                      support@miranalearn.com
+                      support@minaralearn.com
                     </a>
                   </p>
                 </div>
@@ -434,7 +434,7 @@ export default function ContactPage() {
             },
             {
               q: "Do you offer corporate or group discounts?",
-              a: "Yes, we provide special pricing for organizations and groups. Please contact our sales team at sales@extralms.com for more information on bulk purchases.",
+              a: "Yes, we provide special pricing for organizations and groups. Please contact our sales team at sales@minaralearn.com for more information on bulk purchases.",
             },
             {
               q: "Can I access courses on mobile devices?",

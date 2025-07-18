@@ -3,16 +3,20 @@ import { createClient } from "@/utils/supabase/server";
 
 export async function GET(request) {
   try {
+    console.log("📊 Instructor stats API called");
     const supabase = await createClient();
     
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      console.log("❌ Stats auth error:", authError?.message || "No user");
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
         { status: 401 }
       );
     }
+
+    console.log("✅ Stats user authenticated:", user.email);
 
     // Check if user has instructor role
     const { data: profile, error: profileError } = await supabase
@@ -27,6 +31,12 @@ export async function GET(request) {
         { status: 403 }
       );
     }
+
+    // Set cache headers for 5 minutes
+    const headers = {
+      'Cache-Control': 'public, max-age=300, stale-while-revalidate=60',
+      'Vary': 'Authorization',
+    };
 
     // Get instructor statistics
     const { data: courses, error: coursesError } = await supabase
@@ -115,18 +125,23 @@ export async function GET(request) {
     return NextResponse.json({
       success: true,
       data: {
+        totalStudents: totalEnrollments || 0, // Map totalEnrollments to totalStudents
+        totalEnrollments: totalEnrollments || 0,
+        totalRevenue: 0, // Placeholder for now
+        courseCompletionRate: 0, // Placeholder for now  
+        averageRating: Number(averageRating.toFixed(1)),
+        recentEnrollments: recentEnrollments || [],
+        recentReviews: recentReviews || [],
         stats: {
           totalCourses,
           totalEnrollments: totalEnrollments || 0,
           totalReviews,
           averageRating: Number(averageRating.toFixed(1)),
         },
-        recentEnrollments: recentEnrollments || [],
-        recentReviews: recentReviews || [],
         monthlyEnrollments: monthlyData,
         courses: courses || [],
       },
-    });
+    }, { headers });
   } catch (error) {
     console.error("Error fetching instructor stats:", error);
     return NextResponse.json(

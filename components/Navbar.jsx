@@ -2,7 +2,7 @@
 "use client";
 import "@/app/globals.css";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo, useCallback, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { getDashboardRoute } from "@/lib/roles";
@@ -21,7 +21,7 @@ import {
   User,
 } from "lucide-react";
 
-const Navbar = () => {
+const Navbar = memo(() => {
   const { user, profile, role, isAdmin, isInstructor, signOut, loading } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
@@ -33,15 +33,15 @@ const Navbar = () => {
     setMounted(true);
   }, []);
 
-  const toggleMenu = () => {
+  const toggleMenu = useCallback(() => {
     setIsMenuOpen(!isMenuOpen);
-  };
+  }, [isMenuOpen]);
 
-  const closeMenu = () => {
+  const closeMenu = useCallback(() => {
     setIsMenuOpen(false);
-  };
+  }, []);
 
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
     if (newTheme === "dark") {
@@ -49,7 +49,7 @@ const Navbar = () => {
     } else {
       document.documentElement.classList.remove("dark");
     }
-  };
+  }, [theme, setTheme]);
 
   // Apply the correct theme on initial load
   useEffect(() => {
@@ -61,21 +61,24 @@ const Navbar = () => {
   }, [theme]);
 
   // Determine if the current path is a dashboard path
-  const isDashboard = pathname?.includes("/dashboard");
+  const isDashboard = useMemo(() => pathname?.includes("/dashboard"), [pathname]);
 
   // Dashboard routes by role
-  const getDashboardLink = () => {
+  const getDashboardLink = useCallback(() => {
     if (loading || !user || !role) return "/auth/signin";
     return getDashboardRoute(role);
-  };
+  }, [loading, user, role]);
 
-  const handleSignOut = async () => {
+  const handleSignOut = useCallback(async () => {
     await signOut();
     router.push("/");
-  };
+  }, [signOut, router]);
 
   // Select logo based on theme
-  const logoSrc = theme === "dark" ? "/minara-learn-logo-white.svg" : "/minara-learn-logo-black.svg";
+  const logoSrc = useMemo(() => 
+    theme === "dark" ? "/minara-learn-logo-white.svg" : "/minara-learn-logo-black.svg",
+    [theme]
+  );
 
   return (
     <nav className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
@@ -163,9 +166,9 @@ const Navbar = () => {
               
               {isInstructor && (
                 <Link
-                  href="/dashboard/lecturer"
+                  href="/dashboard/instructor"
                   className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                    pathname?.startsWith("/dashboard/lecturer")
+                    pathname?.startsWith("/dashboard/instructor")
                       ? "border-blue-500 text-slate-900 dark:text-white"
                       : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700"
                   }`}
@@ -398,6 +401,8 @@ const Navbar = () => {
       )}
     </nav>
   );
-};
+});
+
+Navbar.displayName = 'Navbar';
 
 export default Navbar;

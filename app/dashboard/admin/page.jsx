@@ -173,7 +173,22 @@ export default function AdminDashboard() {
           throw new Error("Failed to fetch dashboard data");
         }
 
-        setDashboardData(dashboardData.data || {});
+        setDashboardData(dashboardData.data || {
+          totalUsers: 0,
+          totalCourses: 0,
+          totalRevenue: 0,
+          totalEnrollments: 0,
+          averageRating: 0,
+          recentUsers: [],
+          usersByRole: {
+            student: 0,
+            lecturer: 0,
+            admin: 0,
+          },
+          monthlySales: [],
+          popularCourses: [],
+          recentEnrollments: [],
+        });
 
         // If we don't have API data yet, fall back to mock data
         if (!dashboardData.data) {
@@ -431,20 +446,20 @@ export default function AdminDashboard() {
       // Update UI by filtering out the deleted user
       setDashboardData({
         ...dashboardData,
-        recentUsers: dashboardData.recentUsers.filter(
+        recentUsers: (dashboardData.recentUsers || []).filter(
           (user) => user.id !== confirmDelete
         ),
-        totalUsers: dashboardData.totalUsers - 1,
+        totalUsers: (dashboardData.totalUsers || 0) - 1,
         usersByRole: {
-          ...dashboardData.usersByRole,
+          ...(dashboardData.usersByRole || {}),
           // Decrement the count for the role of the deleted user
-          [dashboardData.recentUsers.find((user) => user.id === confirmDelete)
+          [(dashboardData.recentUsers || []).find((user) => user.id === confirmDelete)
             ?.role]:
-            dashboardData.usersByRole[
-              dashboardData.recentUsers.find(
+            ((dashboardData.usersByRole || {})[
+              (dashboardData.recentUsers || []).find(
                 (user) => user.id === confirmDelete
               )?.role
-            ] - 1,
+            ] || 0) - 1,
         },
       });
 
@@ -468,7 +483,7 @@ export default function AdminDashboard() {
       // Update UI with the edited user data
       setDashboardData({
         ...dashboardData,
-        recentUsers: dashboardData.recentUsers.map((user) =>
+        recentUsers: (dashboardData.recentUsers || []).map((user) =>
           user.id === userData.id ? { ...user, ...userData } : user
         ),
       });
@@ -482,7 +497,7 @@ export default function AdminDashboard() {
   };
 
   // Filter users based on search term and role filter
-  const filteredUsers = dashboardData.recentUsers.filter((user) => {
+  const filteredUsers = (dashboardData.recentUsers || []).filter((user) => {
     const matchesSearch =
       searchTerm === "" ||
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -515,7 +530,7 @@ export default function AdminDashboard() {
       style: "currency",
       currency: "USD",
       minimumFractionDigits: 2,
-    }).format(amount);
+    }).format(amount || 0);
   };
 
   if (isLoading) {
@@ -568,11 +583,11 @@ export default function AdminDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{dashboardData.totalUsers}</div>
+            <div className="text-3xl font-bold">{dashboardData.totalUsers || 0}</div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               <TrendingUp className="inline h-3 w-3 mr-1" />
-              {dashboardData.usersByRole.student} students,{" "}
-              {dashboardData.usersByRole.lecturer} lecturers
+              {(dashboardData.usersByRole || {}).student || 0} students,{" "}
+              {(dashboardData.usersByRole || {}).lecturer || 0} lecturers
             </p>
           </CardContent>
         </Card>
@@ -586,7 +601,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">
-              {dashboardData.totalCourses}
+              {dashboardData.totalCourses || 0}
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               <TrendingUp className="inline h-3 w-3 mr-1" />5 new this month
@@ -603,11 +618,11 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">
-              ${dashboardData.totalRevenue.toLocaleString()}
+              ${(dashboardData.totalRevenue || 0).toLocaleString()}
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               <TrendingUp className="inline h-3 w-3 mr-1" />$
-              {(dashboardData.totalRevenue * 0.1).toLocaleString()} this month
+              {((dashboardData.totalRevenue || 0) * 0.1).toLocaleString()} this month
             </p>
           </CardContent>
         </Card>
@@ -623,7 +638,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">
-              {dashboardData.totalEnrollments}
+              {dashboardData.totalEnrollments || 0}
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               <TrendingUp className="inline h-3 w-3 mr-1" />
@@ -733,8 +748,8 @@ export default function AdminDashboard() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {dashboardData.recentUsers.length > 0 ? (
-                        dashboardData.recentUsers.map((user) => (
+                      {(dashboardData.recentUsers || []).length > 0 ? (
+                        (dashboardData.recentUsers || []).map((user) => (
                           <TableRow
                             key={user.id}
                             className="hover:bg-slate-50 dark:hover:bg-slate-800/50"
@@ -824,8 +839,8 @@ export default function AdminDashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {dashboardData.popularCourses.length > 0 ? (
-                      dashboardData.popularCourses.map((course) => (
+                    {(dashboardData.popularCourses || []).length > 0 ? (
+                      (dashboardData.popularCourses || []).map((course) => (
                         <TableRow
                           key={course.id}
                           className="hover:bg-slate-50 dark:hover:bg-slate-800/50"
@@ -883,7 +898,7 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-3 gap-4 mb-4">
                   <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center">
                     <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                      {dashboardData.usersByRole.student}
+                      {(dashboardData.usersByRole || {}).student || 0}
                     </p>
                     <p className="text-sm text-slate-600 dark:text-slate-400">
                       Students
@@ -891,7 +906,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-center">
                     <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                      {dashboardData.usersByRole.lecturer}
+                      {(dashboardData.usersByRole || {}).lecturer || 0}
                     </p>
                     <p className="text-sm text-slate-600 dark:text-slate-400">
                       Lecturers
@@ -899,7 +914,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg text-center">
                     <p className="text-2xl font-bold text-red-600 dark:text-red-400">
-                      {dashboardData.usersByRole.admin}
+                      {(dashboardData.usersByRole || {}).admin || 0}
                     </p>
                     <p className="text-sm text-slate-600 dark:text-slate-400">
                       Admins
@@ -934,9 +949,9 @@ export default function AdminDashboard() {
             <h2 className="text-2xl font-bold mb-4">Recent Enrollments</h2>
             <Card className="border-0 shadow-md">
               <CardContent className="p-4">
-                {dashboardData.recentEnrollments.length > 0 ? (
+                {(dashboardData.recentEnrollments || []).length > 0 ? (
                   <div className="space-y-4">
-                    {dashboardData.recentEnrollments.map((enrollment) => (
+                    {(dashboardData.recentEnrollments || []).map((enrollment) => (
                       <div
                         key={enrollment.id}
                         className="flex items-start gap-3"

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import getCourses from "../../lib/GetCourses"
 
 export const metadata = {
-  title: "Browse Courses | E-X-TRA LMS",
+  title: "Browse Courses | Minara Learn",
   description:
     "Browse through our collection of courses and start learning today",
 };

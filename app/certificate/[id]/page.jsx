@@ -40,7 +40,7 @@ export default function CertificatePage({ params }) {
           instructorName: "Jane Smith",
           issueDate: new Date().toISOString(),
           completionDate: new Date().toISOString(),
-          logoUrl: "https://placehold.co/150/2563eb/FFFFFF/png?text=E-Xtra",
+          logoUrl: "https://placehold.co/150/2563eb/FFFFFF/png?text=Minara",
           signature:
             "https://placehold.co/200x100/2563eb/FFFFFF/png?text=Signature",
         };
@@ -187,7 +187,7 @@ export default function CertificatePage({ params }) {
                   />
                 </div>
                 <h1 className="text-3xl font-bold text-blue-600 mb-1">
-                  E-Xtra Learning
+                  Minara Learning
                 </h1>
                 <div className="w-80 h-1 bg-blue-600 mx-auto mb-6"></div>
                 <h2 className="text-4xl font-serif font-bold text-slate-800 mb-3">
