@@ -137,16 +137,28 @@ const Navbar = () => {
               
               {/* Role-based navigation */}
               {isAdmin && (
-                <Link
-                  href="/dashboard/admin"
-                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                    pathname?.startsWith("/dashboard/admin")
-                      ? "border-red-500 text-slate-900 dark:text-white"
-                      : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700"
-                  }`}
-                >
-                  Admin Panel
-                </Link>
+                <>
+                  <Link
+                    href="/dashboard/admin"
+                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                      pathname?.startsWith("/dashboard/admin")
+                        ? "border-red-500 text-slate-900 dark:text-white"
+                        : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700"
+                    }`}
+                  >
+                    Admin Panel
+                  </Link>
+                  <Link
+                    href="/system-test"
+                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                      pathname === "/system-test"
+                        ? "border-green-500 text-slate-900 dark:text-white"
+                        : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700"
+                    }`}
+                  >
+                    System Test
+                  </Link>
+                </>
               )}
               
               {isInstructor && (
