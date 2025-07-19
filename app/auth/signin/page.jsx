@@ -47,6 +47,15 @@ function SignInContent() {
     }
   }, [message]);
 
+  // Debug: Log environment variables availability
+  useState(() => {
+    console.log('Environment check:', {
+      hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      hasSupabaseKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL
+    });
+  }, []);
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -55,39 +64,34 @@ function SignInContent() {
     try {
       setIsLoading(true);
       
-      // Use the API route for signin to handle profile creation if needed
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password
-        })
+      const supabase = createClient();
+      
+      console.log('Attempting to sign in with:', data.email);
+      
+      // Direct sign in with Supabase
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
       });
 
-      const result = await response.json();
+      console.log('Auth response:', { authData, authError });
 
-      if (response.ok && result.success) {
-        // Manually sign in the user client-side after successful API login
-        const supabase = createClient();
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: data.email,
-          password: data.password,
-        });
+      if (authError) {
+        console.error("Sign in error:", authError);
+        toast.error(authError.message || "Invalid email or password");
+        return;
+      }
 
-        if (signInError) {
-          console.error("Client sign-in error:", signInError);
-          toast.error("Login verification failed. Please try again.");
-          return;
-        }
-
-        toast.success("Signed in successfully");
-        router.push(callbackUrl);
+      if (authData?.user) {
+        console.log('User signed in successfully:', authData.user.id);
+        
+        toast.success("Signed in successfully!");
+        
+        // Simple redirect without additional database calls
+        window.location.href = callbackUrl;
       } else {
-        console.error("Login API error:", result.message);
-        toast.error(result.message || "Invalid email or password");
+        console.error('No user data returned');
+        toast.error("Authentication failed. Please try again.");
       }
     } catch (error) {
       console.error("Sign in error:", error);

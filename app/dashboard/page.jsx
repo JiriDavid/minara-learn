@@ -21,10 +21,17 @@ export default function DashboardPage() {
         if (data.success && data.data?.role) {
           // Redirect based on role
           const role = data.data.role;
-          if (role === 'instructor') {
+          console.log('Redirecting user with role:', role);
+          
+          if (role === 'admin') {
+            router.push('/dashboard/admin');
+          } else if (role === 'instructor') {
             router.push('/dashboard/instructor');
+          } else if (role === 'student') {
+            router.push('/dashboard/student');
           } else {
-            router.push(`/dashboard/${role}`);
+            // Default to student dashboard for unknown roles
+            router.push("/dashboard/student");
           }
         } else {
           // Default to student dashboard if role cannot be determined

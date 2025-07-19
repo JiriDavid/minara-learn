@@ -157,8 +157,15 @@ export default function StudentDashboard() {
         }
 
         // Redirect if not a student
-        if (!isStudent) {
-          router.push("/dashboard");
+        if (user && profile && profile.role !== 'student') {
+          console.log('Non-student user accessing student dashboard, redirecting...', profile.role);
+          if (profile.role === 'admin') {
+            router.push("/dashboard/admin");
+          } else if (profile.role === 'instructor') {
+            router.push("/dashboard/instructor");
+          } else {
+            router.push("/dashboard");
+          }
           return;
         }
 

@@ -37,7 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "next/link";
+import Link from "next/link";
 
 export default function ProfilePage() {
   const router = useRouter();
