@@ -28,6 +28,8 @@ function SignInContent() {
   const message = searchParams.get("message");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showResendVerification, setShowResendVerification] = useState(false);
+  const [lastFailedEmail, setLastFailedEmail] = useState("");
 
   const {
     register,
@@ -39,6 +41,26 @@ function SignInContent() {
       password: "",
     },
   });
+
+  const resendVerification = async () => {
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: lastFailedEmail,
+      });
+
+      if (error) {
+        toast.error("Failed to resend verification email. Please try again.");
+      } else {
+        toast.success("Verification email sent! Please check your inbox.");
+        setShowResendVerification(false);
+      }
+    } catch (error) {
+      console.error("Resend verification error:", error);
+      toast.error("Failed to resend verification email.");
+    }
+  };
 
   // Show message if present
   useState(() => {
@@ -78,7 +100,27 @@ function SignInContent() {
 
       if (authError) {
         console.error("Sign in error:", authError);
-        toast.error(authError.message || "Invalid email or password");
+        
+        // Handle specific error cases
+        if (authError.message === "Invalid login credentials") {
+          setLastFailedEmail(data.email);
+          setShowResendVerification(true);
+          toast.error("Invalid email or password. If you just registered, please check your email to verify your account first.", {
+            duration: 6000,
+          });
+        } else if (authError.message.includes("Email not confirmed")) {
+          setLastFailedEmail(data.email);
+          setShowResendVerification(true);
+          toast.error("Please check your email and click the verification link before signing in.", {
+            duration: 6000,
+          });
+        } else if (authError.message.includes("signup_disabled")) {
+          toast.error("Account registration is currently disabled. Please contact support.", {
+            duration: 6000,
+          });
+        } else {
+          toast.error(authError.message || "Invalid email or password");
+        }
         return;
       }
 
@@ -87,8 +129,8 @@ function SignInContent() {
         
         toast.success("Signed in successfully!");
         
-        // Simple redirect without additional database calls
-        window.location.href = callbackUrl;
+        // Use Next.js router for proper client-side navigation
+        router.push(callbackUrl);
       } else {
         console.error('No user data returned');
         toast.error("Authentication failed. Please try again.");
@@ -270,6 +312,25 @@ function SignInContent() {
             >
               {isLoading ? "Signing in..." : "Sign in"}
             </Button>
+            
+            {/* Resend Verification Email */}
+            {showResendVerification && (
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                <p className="text-sm text-yellow-800 mb-2">
+                  Haven't received the verification email for <strong>{lastFailedEmail}</strong>?
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={resendVerification}
+                  className="w-full"
+                >
+                  <Mail className="w-4 h-4 mr-2" />
+                  Resend Verification Email
+                </Button>
+              </div>
+            )}
           </form>
         </CardContent>
 

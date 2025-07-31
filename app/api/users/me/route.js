@@ -54,13 +54,13 @@ export async function GET() {
       );
     }
 
-    console.log("👤 Profile data:", { id: profile.id, role: profile.role, name: profile.name });
+    console.log("👤 Profile data:", { id: profile.id, role: profile.role, full_name: profile.full_name });
 
     return NextResponse.json({
       success: true,
       data: {
         id: profile.id,
-        name: profile.name, // Use name from schema
+        name: profile.full_name || profile.name, // Try full_name first, fallback to name
         email: user.email,
         role: profile.role,
         image: profile.avatar_url,

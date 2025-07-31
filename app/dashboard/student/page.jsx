@@ -34,99 +34,6 @@ import { formatDate } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 
-// Helper functions for mock data
-const getMockCourses = () => [
-  {
-    id: "course1",
-    title: "JavaScript Fundamentals",
-    slug: "javascript-fundamentals",
-    progress: 65,
-    image: "/images/course-js.jpg",
-    thumbnail:
-      "https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    instructor: "John Doe",
-    lastAccessed: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    totalLessons: 24,
-    completedLessons: 16,
-    nextLesson: "Functions and Scope",
-    course: { duration: 1440 }, // 24 hours in minutes
-  },
-  {
-    id: "course2",
-    title: "React - The Complete Guide",
-    slug: "react-complete-guide",
-    progress: 32,
-    image: "/images/course-react.jpg",
-    thumbnail:
-      "https://images.unsplash.com/photo-1633356122102-3fe601e05bd2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    instructor: "Jane Smith",
-    lastAccessed: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    totalLessons: 42,
-    completedLessons: 13,
-    nextLesson: "State and Props",
-    course: { duration: 2520 }, // 42 hours in minutes
-  },
-];
-
-const getMockEvents = () => [
-  {
-    id: "event1",
-    title: "Live Q&A Session",
-    course: "JavaScript Fundamentals",
-    date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-    type: "webinar",
-  },
-  {
-    id: "event2",
-    title: "Project Submission Deadline",
-    course: "React - The Complete Guide",
-    date: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString(),
-    type: "deadline",
-  },
-];
-
-const getMockRecommendations = () => [
-  {
-    id: "rec1",
-    title: "Advanced JavaScript Concepts",
-    slug: "advanced-javascript",
-    thumbnail:
-      "https://images.unsplash.com/photo-1627398242454-45a1465c2479?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    instructor: "John Doe",
-    rating: 4.8,
-    reviewCount: 325,
-    level: "Advanced",
-  },
-  {
-    id: "rec2",
-    title: "Redux for React Developers",
-    slug: "redux-react-developers",
-    thumbnail:
-      "https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    instructor: "Jane Smith",
-    rating: 4.7,
-    reviewCount: 218,
-    level: "Intermediate",
-  },
-];
-
-const getMockAchievements = () => [
-  {
-    id: "ach1",
-    title: "Fast Learner",
-    description: "Completed 5 lessons in one day",
-    date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    icon: "zap",
-  },
-  {
-    id: "ach2",
-    title: "Perfect Score",
-    description: "Achieved 100% on a quiz",
-    date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    icon: "award",
-  },
-];
-
 export default function StudentDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -171,120 +78,91 @@ export default function StudentDashboard() {
 
         setIsLoading(true);
 
-        // Fetch student's enrollments with error handling
+        // Fetch all dashboard data in parallel
+        const [enrollmentsResponse, activityResponse, eventsResponse, recommendationsResponse, achievementsResponse] = await Promise.all([
+          fetch("/api/student/enrollments"),
+          fetch("/api/student/activity"),
+          fetch("/api/student/events"),
+          fetch("/api/student/recommendations"),
+          fetch("/api/student/achievements")
+        ]);
+
+        // Process enrollments data
         let enrollmentsData = [];
-        try {
-          const enrollmentsResponse = await fetch("/api/student/enrollments");
-          if (enrollmentsResponse.ok) {
-            enrollmentsData = await enrollmentsResponse.json();
-          } else {
-            console.warn("Failed to fetch enrollments:", enrollmentsResponse.statusText);
-          }
-        } catch (error) {
-          console.warn("Enrollments API error:", error);
+        if (enrollmentsResponse.ok) {
+          enrollmentsData = await enrollmentsResponse.json();
+        } else {
+          console.warn("Failed to fetch enrollments:", enrollmentsResponse.statusText);
         }
 
-        // Fetch activity data with error handling
+        // Process activity data
         let activityData = [];
-        try {
-          const activityResponse = await fetch("/api/student/activity");
-          if (activityResponse.ok) {
-            const rawActivityData = await activityResponse.json();
-            // Transform activity data to match expected format
-            activityData = rawActivityData.map(activity => ({
-              id: activity.id,
-              type: activity.type,
-              course: activity.course.title,
-              detail: activity.detail,
-              date: activity.created_at,
-              icon: activity.type.includes('completed') ? 'check' : 
-                   activity.type.includes('started') ? 'play' : 
-                   activity.type.includes('certificate') ? 'award' : 'clock',
-            }));
-          } else {
-            console.warn("Failed to fetch activity:", activityResponse.statusText);
-          }
-        } catch (error) {
-          console.warn("Activity API error:", error);
+        if (activityResponse.ok) {
+          const rawActivityData = await activityResponse.json();
+          activityData = rawActivityData.map(activity => ({
+            id: activity.id,
+            type: activity.type,
+            course: activity.course,
+            detail: activity.detail,
+            date: activity.date,
+            icon: activity.icon,
+          }));
+        } else {
+          console.warn("Failed to fetch activity:", activityResponse.statusText);
         }
 
-        // Use mock data for activity if API failed
-        const mockActivityData = [
-          {
-            id: "act1",
-            type: "lesson_completed",
-            course: "JavaScript Fundamentals",
-            detail: "Variables and Data Types",
-            date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-            icon: "check",
-          },
-          {
-            id: "act2",
-            type: "course_started",
-            course: "React - The Complete Guide",
-            detail: "",
-            date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-            icon: "play",
-          },
-          {
-            id: "act3",
-            type: "certificate_earned",
-            course: "HTML & CSS Bootcamp",
-            detail: "",
-            date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-            icon: "award",
-          },
-        ];
-        
-        const finalActivityData = activityData.length > 0 ? activityData : mockActivityData;
+        // Process events data
+        let eventsData = [];
+        if (eventsResponse.ok) {
+          eventsData = await eventsResponse.json();
+        } else {
+          console.warn("Failed to fetch events:", eventsResponse.statusText);
+        }
+
+        // Process recommendations data
+        let recommendationsData = [];
+        if (recommendationsResponse.ok) {
+          recommendationsData = await recommendationsResponse.json();
+        } else {
+          console.warn("Failed to fetch recommendations:", recommendationsResponse.statusText);
+        }
+
+        // Process achievements data
+        let achievementsData = [];
+        if (achievementsResponse.ok) {
+          achievementsData = await achievementsResponse.json();
+        } else {
+          console.warn("Failed to fetch achievements:", achievementsResponse.statusText);
+        }
 
         // Transform the API data into the expected dashboard data structure
         const transformedData = {
           enrolledCourses: enrollmentsData?.length || 0,
-          completedCourses:
-            enrollmentsData?.filter((e) => e.progress === 100).length || 0,
+          completedCourses: enrollmentsData?.filter((e) => e.progress === 100).length || 0,
           totalHoursLearned: calculateTotalHours(enrollmentsData || []),
-          certificatesEarned:
-            enrollmentsData?.filter((e) => e.certificateIssued).length || 0,
-          inProgressCourses: enrollmentsData?.length > 0 ? enrollmentsData : getMockCourses(),
-          recentActivity: finalActivityData,
-          upcomingEvents: getMockEvents(),
-          recommendedCourses: getMockRecommendations(),
-          achievements: getMockAchievements(),
+          certificatesEarned: enrollmentsData?.filter((e) => e.certificateIssued).length || 0,
+          inProgressCourses: enrollmentsData || [],
+          recentActivity: activityData || [],
+          upcomingEvents: eventsData || [],
+          recommendedCourses: recommendationsData || [],
+          achievements: achievementsData || [],
         };
 
         setDashboardData(transformedData);
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
-        // Use mock data on error
+        // Set empty data on error instead of mock data
         setDashboardData({
-          enrolledCourses: 2,
+          enrolledCourses: 0,
           completedCourses: 0,
-          totalHoursLearned: 15.5,
+          totalHoursLearned: 0,
           certificatesEarned: 0,
-          inProgressCourses: getMockCourses(),
-          recentActivity: [
-            {
-              id: "act1",
-              type: "lesson_completed",
-              course: "JavaScript Fundamentals",
-              detail: "Variables and Data Types",
-              date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-              icon: "check",
-            },
-            {
-              id: "act2",
-              type: "course_started",
-              course: "React - The Complete Guide",
-              detail: "",
-              date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-              icon: "play",
-            },
-          ],
-          upcomingEvents: getMockEvents(),
-          recommendedCourses: getMockRecommendations(),
-          achievements: getMockAchievements(),
+          inProgressCourses: [],
+          recentActivity: [],
+          upcomingEvents: [],
+          recommendedCourses: [],
+          achievements: [],
         });
         setIsLoading(false);
       }

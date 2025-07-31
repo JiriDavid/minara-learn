@@ -31,28 +31,21 @@ export default function CertificatePage({ params }) {
 
         if (!isLoaded) return;
 
-        // In real app, fetch certificate data from API
-        // For now using mock data
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Mock certificate data
-        const mockCertificate = {
-          id,
-          courseId: "course-123",
-          courseTitle: "Advanced Web Development with React and Next.js",
-          userName: "John Doe",
-          issueDate: "2023-10-15",
-          completionDate: "2023-10-10",
-          instructorName: "Dr. Jane Smith",
-          instructorTitle: "Senior Web Development Instructor",
-          certificateNumber: `CERT-${Math.random()
-            .toString(36)
-            .substr(2, 9)
-            .toUpperCase()}`,
-          courseHours: 42,
-        };
-
-        setCertificate(mockCertificate);
+        // Fetch certificate data from API
+        try {
+          const response = await fetch(`/api/certificates/${id}`);
+          if (response.ok) {
+            const certificateData = await response.json();
+            setCertificate(certificateData);
+          } else {
+            console.error("Certificate not found");
+            router.push("/certificates");
+          }
+        } catch (apiError) {
+          console.error("Error fetching certificate:", apiError);
+          router.push("/certificates");
+        }
+        
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching certificate:", error);

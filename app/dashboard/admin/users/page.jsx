@@ -73,66 +73,21 @@ export default function AdminUsersPage() {
         if (!isLoaded || !userId) return;
 
         setIsLoading(true);
-        // In a real app, fetch from API
-        // const response = await fetch("/api/admin/users");
-        // const data = await response.json();
-
-        // Mock data for demonstration
-        const mockUsers = [
-          {
-            _id: "user1",
-            name: "John Doe",
-            email: "john@example.com",
-            role: "student",
-            image: "https://i.pravatar.cc/150?img=1",
-            enrolledCourses: 3,
-            isVerified: true,
-            createdAt: "2023-05-10T08:30:00.000Z",
-          },
-          {
-            _id: "user2",
-            name: "Jane Smith",
-            email: "jane@example.com",
-            role: "lecturer",
-            image: "https://i.pravatar.cc/150?img=2",
-            coursesCreated: 5,
-            enrollments: 120,
-            isVerified: true,
-            createdAt: "2023-04-15T14:20:00.000Z",
-          },
-          {
-            _id: "user3",
-            name: "Bob Johnson",
-            email: "bob@example.com",
-            role: "student",
-            image: "https://i.pravatar.cc/150?img=3",
-            enrolledCourses: 7,
-            isVerified: true,
-            createdAt: "2023-06-22T11:45:00.000Z",
-          },
-          {
-            _id: "user4",
-            name: "Sarah Lee",
-            email: "sarah@example.com",
-            role: "admin",
-            image: "https://i.pravatar.cc/150?img=4",
-            isVerified: true,
-            createdAt: "2023-03-08T09:10:00.000Z",
-          },
-          {
-            _id: "user5",
-            name: "Michael Chen",
-            email: "michael@example.com",
-            role: "lecturer",
-            image: "https://i.pravatar.cc/150?img=5",
-            coursesCreated: 2,
-            enrollments: 45,
-            isVerified: true,
-            createdAt: "2023-07-19T16:35:00.000Z",
-          },
-        ];
-
-        setUsers(mockUsers);
+        
+        // Fetch actual users from database
+        try {
+          const response = await fetch("/api/admin/users");
+          if (response.ok) {
+            const data = await response.json();
+            setUsers(data);
+          } else {
+            console.warn("Failed to fetch users:", response.statusText);
+            setUsers([]); // Set empty array instead of mock data
+          }
+        } catch (apiError) {
+          console.error("Error fetching users from API:", apiError);
+          setUsers([]); // Set empty array instead of mock data
+        }
       } catch (error) {
         console.error("Error fetching users:", error);
       } finally {

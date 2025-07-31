@@ -190,196 +190,10 @@ export default function AdminDashboard() {
           recentEnrollments: [],
         });
 
-        // If we don't have API data yet, fall back to mock data
-        if (!dashboardData.data) {
-          // Mock data for development
-          setTimeout(() => {
-            setDashboardData({
-              totalUsers: 156,
-              totalCourses: 28,
-              totalRevenue: 12450,
-              totalEnrollments: 342,
-              recentUsers: [
-                {
-                  id: "user1",
-                  name: "Emily Johnson",
-                  email: "emily.johnson@example.com",
-                  role: "student",
-                  joinDate: "2023-10-15T00:00:00.000Z",
-                },
-                {
-                  id: "user2",
-                  name: "Michael Chen",
-                  email: "michael.chen@example.com",
-                  role: "student",
-                  joinDate: "2023-10-14T00:00:00.000Z",
-                },
-                {
-                  id: "user3",
-                  name: "Sarah Williams",
-                  email: "sarah.williams@example.com",
-                  role: "lecturer",
-                  joinDate: "2023-10-12T00:00:00.000Z",
-                },
-                {
-                  id: "user4",
-                  name: "David Miller",
-                  email: "david.miller@example.com",
-                  role: "student",
-                  joinDate: "2023-10-10T00:00:00.000Z",
-                },
-              ],
-              popularCourses: [
-                {
-                  id: "course1",
-                  title: "JavaScript Fundamentals",
-                  instructor: "John Smith",
-                  enrollments: 85,
-                  rating: 4.8,
-                  revenue: 4250,
-                },
-                {
-                  id: "course2",
-                  title: "Advanced React Patterns",
-                  instructor: "Jane Doe",
-                  enrollments: 72,
-                  rating: 4.7,
-                  revenue: 3600,
-                },
-                {
-                  id: "course3",
-                  title: "Node.js API Masterclass",
-                  instructor: "Mike Johnson",
-                  enrollments: 64,
-                  rating: 4.6,
-                  revenue: 3200,
-                },
-              ],
-              usersByRole: {
-                student: 120,
-                lecturer: 32,
-                admin: 4,
-              },
-              recentEnrollments: [
-                {
-                  id: "enr1",
-                  user: "Alex Thompson",
-                  course: "JavaScript Fundamentals",
-                  date: "2023-10-15T00:00:00.000Z",
-                },
-                {
-                  id: "enr2",
-                  user: "Maria Garcia",
-                  course: "Advanced React Patterns",
-                  date: "2023-10-14T00:00:00.000Z",
-                },
-                {
-                  id: "enr3",
-                  user: "David Kim",
-                  course: "Node.js API Masterclass",
-                  date: "2023-10-12T00:00:00.000Z",
-                },
-              ],
-            });
-            setIsLoading(false);
-          }, 1000);
-        } else {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
-
-        // Fall back to mock data on error
-        setTimeout(() => {
-          setDashboardData({
-            totalUsers: 156,
-            totalCourses: 28,
-            totalRevenue: 12450,
-            totalEnrollments: 342,
-            recentUsers: [
-              {
-                id: "user1",
-                name: "Emily Johnson",
-                email: "emily.johnson@example.com",
-                role: "student",
-                joinDate: "2023-10-15T00:00:00.000Z",
-              },
-              {
-                id: "user2",
-                name: "Michael Chen",
-                email: "michael.chen@example.com",
-                role: "student",
-                joinDate: "2023-10-14T00:00:00.000Z",
-              },
-              {
-                id: "user3",
-                name: "Sarah Williams",
-                email: "sarah.williams@example.com",
-                role: "lecturer",
-                joinDate: "2023-10-12T00:00:00.000Z",
-              },
-              {
-                id: "user4",
-                name: "David Miller",
-                email: "david.miller@example.com",
-                role: "student",
-                joinDate: "2023-10-10T00:00:00.000Z",
-              },
-            ],
-            popularCourses: [
-              {
-                id: "course1",
-                title: "JavaScript Fundamentals",
-                instructor: "John Smith",
-                enrollments: 85,
-                rating: 4.8,
-                revenue: 4250,
-              },
-              {
-                id: "course2",
-                title: "Advanced React Patterns",
-                instructor: "Jane Doe",
-                enrollments: 72,
-                rating: 4.7,
-                revenue: 3600,
-              },
-              {
-                id: "course3",
-                title: "Node.js API Masterclass",
-                instructor: "Mike Johnson",
-                enrollments: 64,
-                rating: 4.6,
-                revenue: 3200,
-              },
-            ],
-            usersByRole: {
-              student: 120,
-              lecturer: 32,
-              admin: 4,
-            },
-            recentEnrollments: [
-              {
-                id: "enr1",
-                user: "Alex Thompson",
-                course: "JavaScript Fundamentals",
-                date: "2023-10-15T00:00:00.000Z",
-              },
-              {
-                id: "enr2",
-                user: "Maria Garcia",
-                course: "Advanced React Patterns",
-                date: "2023-10-14T00:00:00.000Z",
-              },
-              {
-                id: "enr3",
-                user: "David Kim",
-                course: "Node.js API Masterclass",
-                date: "2023-10-12T00:00:00.000Z",
-              },
-            ],
-          });
-          setIsLoading(false);
-        }, 1000);
+        setIsLoading(false);
       }
     };
 
@@ -389,35 +203,32 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // For demonstration, we're loading mock data
-        // In a real application, these would be API calls to fetch statistics
-        setTimeout(() => {
-          // Make sure we're setting primitive values, not objects
-          setStats({
-            users: {
-              total: 1250,
-              students: 1180,
-              lecturers: 45,
-              admins: 25,
-            },
-            courses: {
-              total: 75,
-              published: 52,
-              draft: 23,
-            },
-            enrollments: {
-              total: 3450,
-              active: 2800,
-              completed: 650,
-            },
-            revenue: {
-              total: 32500,
-              thisMonth: 4200,
-              lastMonth: 3800,
-            },
-          });
-          setLoading(false);
-        }, 1000);
+        // Fetch actual stats from database instead of mock data
+        // For now, set empty stats until proper API endpoints are created
+        setStats({
+          users: {
+            total: 0,
+            students: 0,
+            lecturers: 0,
+            admins: 0,
+          },
+          courses: {
+            total: 0,
+            published: 0,
+            draft: 0,
+          },
+          enrollments: {
+            total: 0,
+            active: 0,
+            completed: 0,
+          },
+          revenue: {
+            total: 0,
+            thisMonth: 0,
+            lastMonth: 0,
+          },
+        });
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching stats:", error);
         setLoading(false);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -34,6 +34,7 @@ export default function InstructorSignUp() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [rateLimitUntil, setRateLimitUntil] = useState(null);
 
   const {
     register,
@@ -58,6 +59,28 @@ export default function InstructorSignUp() {
 
   const password = watch("password");
 
+  // Rate limit countdown timer
+  const [countdown, setCountdown] = useState(0);
+  
+  useEffect(() => {
+    let interval;
+    if (rateLimitUntil) {
+      interval = setInterval(() => {
+        const remaining = Math.max(0, Math.ceil((rateLimitUntil - Date.now()) / 1000));
+        setCountdown(remaining);
+        
+        if (remaining === 0) {
+          setRateLimitUntil(null);
+          clearInterval(interval);
+        }
+      }, 1000);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [rateLimitUntil]);
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -67,6 +90,12 @@ export default function InstructorSignUp() {
   };
 
   const onSubmit = async (data) => {
+    // Check if we're still in rate limit period
+    if (countdown > 0) {
+      toast.error(`Please wait ${countdown} more seconds before trying again`);
+      return;
+    }
+
     if (data.password !== data.confirmPassword) {
       toast.error("Passwords do not match");
       return;
@@ -88,7 +117,7 @@ export default function InstructorSignUp() {
         password: data.password,
         options: {
           data: {
-            display_name: data.name,
+            full_name: data.name,  // Changed from display_name to full_name
             role: "instructor_pending", // Will be approved by admin
           },
         },
@@ -96,55 +125,194 @@ export default function InstructorSignUp() {
 
       if (authError) {
         console.error("Auth error:", authError);
-        toast.error(authError.message || "Failed to create account");
+        
+        // Handle rate limiting specifically
+        if (authError.message && authError.message.includes('48 seconds')) {
+          setRateLimitUntil(Date.now() + 48000); // 48 seconds from now
+          toast.error("Too many signup attempts. Please wait 48 seconds before trying again.", {
+            duration: 5000,
+          });
+        } else if (authError.message && authError.message.includes('security purposes')) {
+          setRateLimitUntil(Date.now() + 60000); // 60 seconds from now
+          toast.error("Rate limit reached. Please wait a minute before trying again.", {
+            duration: 5000,
+          });
+        } else if (authError.message && authError.message.includes('User already registered')) {
+          toast.error("An account with this email already exists. Please try signing in instead.", {
+            duration: 5000,
+          });
+        } else {
+          toast.error(authError.message || "Failed to create account");
+        }
         return;
       }
 
       if (authData.user) {
-        // Create user profile
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .insert([
-            {
-              id: authData.user.id,
-              email: data.email,
-              display_name: data.name,
-              role: "instructor_pending",
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            },
-          ]);
+        console.log('User created successfully:', authData.user.id);
+        
+        // Always try to create/update the profile to ensure it exists
+        const profileData = {
+          id: authData.user.id,
+          email: data.email,
+          full_name: data.name,
+          role: "instructor_pending",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
 
-        if (profileError) {
+        console.log('Creating/updating profile with data:', profileData);
+
+        // Try multiple approaches to ensure profile creation works
+        let profileCreated = false;
+        let profileError = null;
+
+        // Method 1: Try upsert first
+        try {
+          const { data: profileResult, error: upsertError } = await supabase
+            .from("profiles")
+            .upsert([profileData], { 
+              onConflict: 'id',
+              ignoreDuplicates: false 
+            })
+            .select();
+
+          if (!upsertError && profileResult) {
+            console.log('Profile upserted successfully:', profileResult);
+            profileCreated = true;
+          } else {
+            throw upsertError || new Error('Upsert returned no data');
+          }
+        } catch (upsertErr) {
+          console.log('Upsert failed, trying insert:', upsertErr);
+          
+          // Method 2: Try simple insert
+          try {
+            const { data: insertResult, error: insertError } = await supabase
+              .from("profiles")
+              .insert([profileData])
+              .select();
+
+            if (!insertError && insertResult) {
+              console.log('Profile inserted successfully:', insertResult);
+              profileCreated = true;
+            } else {
+              throw insertError || new Error('Insert returned no data');
+            }
+          } catch (insertErr) {
+            console.log('Insert failed, checking if profile exists:', insertErr);
+            
+            // Method 3: Check if profile already exists
+            const { data: existingProfile, error: checkError } = await supabase
+              .from("profiles")
+              .select("id, email, full_name, role")
+              .eq("id", authData.user.id)
+              .single();
+
+            if (existingProfile && !checkError) {
+              console.log('Profile already exists:', existingProfile);
+              profileCreated = true;
+            } else {
+              profileError = insertErr || checkError;
+              console.error('All profile creation methods failed:', profileError);
+              console.error('Profile creation failed with details:', {
+                upsertError: upsertErr?.message || 'No upsert error',
+                insertError: insertErr?.message || 'No insert error', 
+                checkError: checkError?.message || 'No check error',
+                userId: authData.user.id,
+                email: data.email,
+                fullName: data.name
+              });
+            }
+          }
+        }
+
+        if (!profileCreated) {
           console.error("Profile creation error:", profileError);
-          toast.error("Account created but profile setup failed. Please contact support.");
+          console.error("Error details:", {
+            message: profileError?.message || 'Unknown error',
+            details: profileError?.details || 'No details available',
+            hint: profileError?.hint || 'No hint available',
+            code: profileError?.code || 'No code available'
+          });
+          
+          // More specific error messages based on error type
+          if (profileError?.code === '42501') {
+            toast.error("Database permission error. Please run the emergency database fix first.", {
+              duration: 7000,
+            });
+          } else if (profileError?.message?.includes('RLS')) {
+            toast.error("Row Level Security blocking profile creation. Please run the database fix.", {
+              duration: 7000,
+            });
+          } else {
+            toast.error(`Failed to create user profile: ${profileError?.message || 'Unknown error'}. Please contact support.`, {
+              duration: 7000,
+            });
+          }
           return;
         }
 
+        // Verify profile exists before proceeding
+        const { data: verifyProfile, error: verifyError } = await supabase
+          .from("profiles")
+          .select("id, email, full_name, role")
+          .eq("id", authData.user.id)
+          .single();
+
+        if (verifyError || !verifyProfile) {
+          console.error("Profile verification failed:", verifyError);
+          toast.error("Profile creation failed. Please contact support.");
+          return;
+        }
+
+        console.log('Profile verified:', verifyProfile);
+
+        // Small delay to ensure profile is fully committed to database
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         // Create instructor application
-        const { error: applicationError } = await supabase
+        const applicationData = {
+          user_id: authData.user.id,
+          email: data.email,
+          name: data.name,
+          expertise: data.expertise,
+          experience: data.experience,
+          organization: data.organization || null,
+          bio: data.bio,
+          motivation: data.motivation,
+          status: "pending",
+          submitted_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+        };
+
+        console.log('Submitting application data:', applicationData);
+
+        const { data: applicationResult, error: applicationError } = await supabase
           .from("instructor_applications")
-          .insert([
-            {
-              user_id: authData.user.id,
-              email: data.email,
-              name: data.name,
-              expertise: data.expertise,
-              experience: data.experience,
-              organization: data.organization,
-              bio: data.bio,
-              motivation: data.motivation,
-              status: "pending",
-              created_at: new Date().toISOString(),
-            },
-          ]);
+          .insert([applicationData])
+          .select();
 
         if (applicationError) {
           console.error("Application creation error:", applicationError);
-          toast.error("Account created but application submission failed. Please contact support.");
+          console.error("Error details:", {
+            message: applicationError.message,
+            details: applicationError.details,
+            hint: applicationError.hint,
+            code: applicationError.code
+          });
+          
+          // Provide more specific error messages
+          if (applicationError.code === '42P01') {
+            toast.error("System configuration error: Instructor applications table not found. Please contact support.");
+          } else if (applicationError.code === '42703') {
+            toast.error("System configuration error: Database schema mismatch. Please contact support.");
+          } else {
+            toast.error(`Application submission failed: ${applicationError.message}. Please contact support.`);
+          }
           return;
         }
 
+        console.log('Application created successfully:', applicationResult);
         toast.success("Application submitted successfully! Please check your email to verify your account. We'll review your application and get back to you soon.");
         router.push("/auth/signin?message=Please check your email to verify your account. Your instructor application is under review.");
       }
@@ -185,8 +353,38 @@ export default function InstructorSignUp() {
             <CardDescription>
               Tell us about your expertise and teaching goals
             </CardDescription>
+            {countdown > 0 && (
+              <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+                ⏱️ Rate limit active: {countdown}s remaining
+              </div>
+            )}
           </CardHeader>
           <CardContent>
+            {/* Database Fix Notice */}
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-start space-x-3">
+                <div className="text-blue-600 mt-0.5">
+                  ℹ️
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-blue-800 mb-1">
+                    Having signup issues?
+                  </h4>
+                  <p className="text-sm text-blue-700">
+                    If you encounter profile creation errors, you may need to run the{" "}
+                    <Link 
+                      href="/admin/emergency-fix" 
+                      className="underline font-medium hover:text-blue-800"
+                      target="_blank"
+                    >
+                      database emergency fix
+                    </Link>{" "}
+                    first to resolve authentication issues.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Personal Information */}
               <div className="space-y-4">
@@ -459,17 +657,39 @@ export default function InstructorSignUp() {
               <Button
                 type="submit"
                 className="w-full h-12 bg-emerald-600 hover:bg-emerald-700"
-                disabled={isLoading}
+                disabled={isLoading || countdown > 0}
               >
                 {isLoading ? (
                   <>
                     <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                     Submitting Application...
                   </>
+                ) : countdown > 0 ? (
+                  `Please wait ${countdown}s before trying again`
                 ) : (
                   "Submit Instructor Application"
                 )}
               </Button>
+              
+              {/* Rate limit info */}
+              {countdown > 0 && (
+                <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                  <p className="text-sm text-yellow-800">
+                    ⏱️ Rate limit active. Please wait {countdown} seconds before submitting again.
+                    This is a security measure to prevent spam.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRateLimitUntil(null);
+                      setCountdown(0);
+                    }}
+                    className="mt-2 text-xs text-yellow-600 hover:text-yellow-800 underline"
+                  >
+                    Clear rate limit (if you waited already)
+                  </button>
+                </div>
+              )}
             </form>
           </CardContent>
           <CardFooter className="text-center">

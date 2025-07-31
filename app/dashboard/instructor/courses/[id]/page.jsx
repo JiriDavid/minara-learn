@@ -91,56 +91,30 @@ export default function EditCoursePage({ params }) {
         if (!isLoaded || !userId) return;
 
         setIsLoading(true);
-        // In a real app, fetch from API
-        // const response = await fetch(`/api/courses/${params.id}`);
-        // const data = await response.json();
-
-        // Mock data for demonstration
-        const mockCourseData = {
-          _id: params.id,
-          title: "Advanced Web Development with React and Next.js",
-          slug: "advanced-web-development-react-nextjs",
-          description:
-            "Learn how to build modern web applications using React and Next.js. Master the latest features and best practices for creating fast, responsive, and scalable web applications.",
-          thumbnail: "https://placehold.co/800x600",
-          price: 99.99,
-          discount: 20,
-          category: "Web Development",
-          level: "Intermediate",
-          language: "English",
-          published: true,
-          tags: ["React", "Next.js", "JavaScript", "Frontend"],
-          requirements: [
-            "Basic knowledge of HTML, CSS, and JavaScript",
-            "Familiarity with React fundamentals",
-            "A modern computer with Node.js installed",
-          ],
-          objectives: [
-            "Build complete web applications with React and Next.js",
-            "Implement server-side rendering and static site generation",
-            "Create responsive and accessible UI components",
-            "Manage application state effectively",
-            "Connect to APIs and handle data fetching",
-            "Deploy applications to production",
-          ],
-        };
-
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Set form values
-        form.reset({
-          title: mockCourseData.title,
-          description: mockCourseData.description,
-          thumbnail: mockCourseData.thumbnail,
-          price: mockCourseData.price,
-          discount: mockCourseData.discount,
-          category: mockCourseData.category,
-          level: mockCourseData.level,
-          language: mockCourseData.language,
-          published: mockCourseData.published,
-          tags: mockCourseData.tags.join(", "),
-        });
+        
+        // Fetch actual course data from API
+        const response = await fetch(`/api/courses/${params.id}`);
+        if (response.ok) {
+          const courseData = await response.json();
+          
+          // Set form values with actual data
+          form.reset({
+            title: courseData.title || "",
+            description: courseData.description || "",
+            thumbnail: courseData.thumbnail || "",
+            price: courseData.price || 0,
+            discount: courseData.discount || 0,
+            category: courseData.category || "",
+            level: courseData.level || "",
+            language: courseData.language || "",
+            published: courseData.published || false,
+            tags: courseData.tags?.join(", ") || "",
+          });
+        } else {
+          console.error("Failed to fetch course data");
+          // Redirect if course not found
+          router.push("/dashboard/instructor/courses");
+        }
 
         setIsLoading(false);
       } catch (error) {

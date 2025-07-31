@@ -33,131 +33,75 @@ export default function CourseLearnPage({ params }) {
         if (!isLoaded || !userId) return;
 
         setIsLoading(true);
-        // In a real app, fetch from API instead of using mock data
-        // const response = await fetch(`/api/courses/${slug}/learn`);
-        // const data = await response.json();
+        
+        // Fetch actual course data from API
+        const response = await fetch(`/api/courses/${slug}/learn`);
+        if (response.ok) {
+          const courseData = await response.json();
+          setCourse(courseData);
+          
+          // Set the first lesson as active if none selected
+          if (courseData.sections?.[0]?.lessons?.[0] && !selectedLesson) {
+            setSelectedLesson(courseData.sections[0].lessons[0]);
+          }
 
-        // Mock data for demonstration
-        const mockCourse = {
-          _id: slug,
-          title: "JavaScript Fundamentals",
-          description:
-            "Learn the fundamentals of JavaScript programming language.",
-          instructorId: "instructor123",
-          instructorName: "John Doe",
-          sections: [
-            {
-              _id: "section1",
-              title: "Getting Started with JavaScript",
-              order: 1,
-              lessons: [
-                {
-                  _id: "lesson1",
-                  title: "Introduction to JavaScript",
-                  description:
-                    "An introduction to the JavaScript programming language.",
-                  duration: 15,
-                  order: 1,
-                  videoUrl: "https://example.com/video1.mp4",
-                  isCompleted: false,
-                },
-                {
-                  _id: "lesson2",
-                  title: "Setting Up Your Development Environment",
-                  description:
-                    "How to set up your development environment for JavaScript.",
-                  duration: 20,
-                  order: 2,
-                  videoUrl: "https://example.com/video2.mp4",
-                  isCompleted: false,
-                },
-              ],
-            },
-            {
-              _id: "section2",
-              title: "JavaScript Basics",
-              order: 2,
-              lessons: [
-                {
-                  _id: "lesson3",
-                  title: "Variables and Data Types",
-                  description:
-                    "Learn about variables and data types in JavaScript.",
-                  duration: 25,
-                  order: 1,
-                  videoUrl: "https://example.com/video3.mp4",
-                  isCompleted: true,
-                },
-                {
-                  _id: "lesson4",
-                  title: "Operators and Expressions",
-                  description:
-                    "Understanding operators and expressions in JavaScript.",
-                  duration: 30,
-                  order: 2,
-                  videoUrl: "https://example.com/video4.mp4",
-                  isCompleted: false,
-                },
-              ],
-            },
-          ],
-          totalLessons: 4,
-        };
-
-        setCourse(mockCourse);
-
-        // Find completed lessons
-        const completed = [];
-        mockCourse.sections.forEach((section) => {
-          section.lessons.forEach((lesson) => {
-            if (lesson.isCompleted) {
-              completed.push(lesson._id);
-            }
+          // Find completed lessons
+          const completed = [];
+          courseData.sections?.forEach((section) => {
+            section.lessons?.forEach((lesson) => {
+              if (lesson.isCompleted) {
+                completed.push(lesson._id);
+              }
+            });
           });
-        });
 
-        setCompletedLessons(completed);
+          setCompletedLessons(completed);
 
-        // Calculate progress
-        const progress = Math.round(
-          (completed.length / mockCourse.totalLessons) * 100
-        );
-        setProgress(progress);
+          // Calculate progress
+          const progress = Math.round(
+            (completed.length / (courseData.totalLessons || 1)) * 100
+          );
+          setProgress(progress);
 
-        // Set initial current lesson (either first incomplete or first lesson)
-        let foundCurrent = false;
+          // Set initial current lesson (either first incomplete or first lesson)
+          let foundCurrent = false;
 
-        for (const section of mockCourse.sections) {
-          if (foundCurrent) break;
+          for (const section of courseData.sections || []) {
+            if (foundCurrent) break;
 
-          for (const lesson of section.lessons) {
-            if (!lesson.isCompleted) {
-              setCurrentSection(section);
-              setCurrentLesson(lesson);
-              foundCurrent = true;
-              break;
+            for (const lesson of section.lessons || []) {
+              if (!lesson.isCompleted) {
+                setCurrentSection(section);
+                setCurrentLesson(lesson);
+                foundCurrent = true;
+                break;
+              }
             }
           }
-        }
 
-        // If all lessons are completed, set to first lesson
-        if (
-          !foundCurrent &&
-          mockCourse.sections.length > 0 &&
-          mockCourse.sections[0].lessons.length > 0
-        ) {
-          setCurrentSection(mockCourse.sections[0]);
-          setCurrentLesson(mockCourse.sections[0].lessons[0]);
+          // If all lessons are completed, set to first lesson
+          if (
+            !foundCurrent &&
+            courseData.sections?.length > 0 &&
+            courseData.sections[0].lessons?.length > 0
+          ) {
+            setCurrentSection(courseData.sections[0]);
+            setCurrentLesson(courseData.sections[0].lessons[0]);
+          }
+        } else {
+          console.error("Failed to fetch course data");
+          router.push("/courses");
         }
       } catch (error) {
         console.error("Error fetching course:", error);
+        router.push("/courses");
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchCourse();
-  }, [slug, userId, isLoaded]);
+  }, [slug, userId, isLoaded, router]);
 
   const selectLesson = (section, lesson) => {
     setCurrentSection(section);

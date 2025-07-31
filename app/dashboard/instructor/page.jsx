@@ -194,36 +194,17 @@ const InstructorDashboard = memo(() => {
         setDashboardData(dashboardData);
         setCourses(courses);
 
-        // If we don't have API data yet, fall back to mock data
-        if (courses.length === 0) {
-          // Use the existing mock data
-          setTimeout(() => {
-            setStats({
-              totalCourses: 8,
-              publishedCourses: 5,
-              draftCourses: 3,
-              totalStudents: 342,
-              totalHours: 47,
-              averageRating: 4.7,
-            });
+        // Calculate stats from actual data
+        setStats({
+          totalCourses: courses.length,
+          publishedCourses: courses.filter((c) => c.isPublished).length,
+          draftCourses: courses.filter((c) => !c.isPublished).length,
+          totalStudents: stats.totalStudents || 0,
+          totalHours: courses.reduce((acc, course) => acc + (course.duration || 0), 0) / 60,
+          averageRating: stats.averageRating || 0,
+        });
 
-            // Keep the existing mock courses
-            setLoading(false);
-          }, 1000);
-        } else {
-          setStats({
-            totalCourses: courses.length,
-            publishedCourses: courses.filter((c) => c.isPublished).length,
-            draftCourses: courses.filter((c) => !c.isPublished).length,
-            totalStudents: stats.totalStudents || 0,
-            totalHours:
-              courses.reduce((acc, course) => acc + (course.duration || 0), 0) /
-              60,
-            averageRating: stats.averageRating || 0,
-          });
-
-          setLoading(false);
-        }
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching instructor dashboard data:", error);
         setLoading(false);
