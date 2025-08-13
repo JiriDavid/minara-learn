@@ -14,10 +14,10 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "Minara Learn - Learning Management System",
+  title: "Minara Learn",
   description:
-    "Minara is a powerful learning management system for students, instructors, and administrators.",
-  keywords: ["LMS", "education", "online learning", "e-learning", "courses"],
+    "Minara, zimsec-oriented courses plaform for Zimbabwean students. Offering a wide range of subjects and resources to help you excel in your studies.",
+  keywords: ["LMS", "education", "online learning", "e-learning", "courses", "zimsec", "Zimbabwe", "students", "study resources", "zimsec", "Minara", "Minara Learn", "Minara LMS", "Minara Education", "Minara Courses", "Minara Zimbabwe", "Minara Students", "Minara Learning", "Minara Platform", "Minara Study", "Minara Resources", "Minara Subjects", "Minara Exams", "Minara Revision", "Minara Tutorials", "Minara Lessons", "Minara Classes", "Minara Online", "Minara Digital Learning", "Minara E-learning", "Minara Educational Platform", "Minara Learning Management System", "Minara LMS Zimbabwe", "Minara Education Platform", "Minara Online Courses", "Minara Study Platform", "Minara Learning Resources", "Minara Educational Resources", "Minara Academic Platform", "Minara Academic Resources", "Minara Academic Courses", "Minara Academic Learning", "Minara Academic Subjects", "Minara Academic Students", "Minara Academic Exams", "Minara Academic Revision", "Minara Academic Tutorials", "Minara Academic Lessons", "Minara Academic Classes", "zimsec revision", "zimsec courses", "zimsec students", "zimsec learning", "zimsec subjects", "zimsec exams", "zimsec resources"],
   viewport: {
     width: 'device-width',
     initialScale: 1,

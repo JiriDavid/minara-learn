@@ -37,7 +37,7 @@
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.1",
     "lucide-react": "^0.483.0",
-    "next": "15.3.2",
+    "next": "^15.4.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.60.0",
@@ -54,5 +54,20 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "tailwindcss": "^4"
-  }
+  },
+  "description": "minara learn platform",
+  "main": "middleware.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JiriDavid/minara-learn.git"
+  },
+  "author": "David Promise Jiri",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JiriDavid/minara-learn/issues"
+  },
+  "homepage": "https://github.com/JiriDavid/minara-learn#readme"
 }

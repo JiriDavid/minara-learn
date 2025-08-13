@@ -17,7 +17,7 @@ export default async function CoursesPage() {
   const courses = await getCourses();
 
   return (
-    <div className="container py-10 px-6 bg-white dark:bg-gray-900 min-h-screen">
+    <div className="container py-10 px-6 bg-white dark:bg-gray-900 min-h-screen w-full">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">Browse Courses</h1>
