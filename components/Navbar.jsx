@@ -1,4 +1,3 @@
-
 "use client";
 import "@/app/globals.css";
 import Link from "next/link";
@@ -22,12 +21,13 @@ import {
 } from "lucide-react";
 
 const Navbar = memo(() => {
-  const { user, profile, role, isAdmin, isInstructor, signOut, loading } = useAuth();
+  const { user, profile, role, isAdmin, isInstructor, signOut, loading } =
+    useAuth();
   const pathname = usePathname();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { theme, setTheme } = useStore();
-  const [mounted, setMounted] = useState(false)
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -61,7 +61,10 @@ const Navbar = memo(() => {
   }, [theme]);
 
   // Determine if the current path is a dashboard path
-  const isDashboard = useMemo(() => pathname?.includes("/dashboard"), [pathname]);
+  const isDashboard = useMemo(
+    () => pathname?.includes("/dashboard"),
+    [pathname]
+  );
 
   // Dashboard routes by role
   const getDashboardLink = useCallback(() => {
@@ -75,8 +78,11 @@ const Navbar = memo(() => {
   }, [signOut, router]);
 
   // Select logo based on theme
-  const logoSrc = useMemo(() => 
-    theme === "dark" ? "/minara-learn-logo-white.svg" : "/minara-learn-logo-black.svg",
+  const logoSrc = useMemo(
+    () =>
+      theme === "dark"
+        ? "/minara-learn-logo-white.svg"
+        : "/minara-learn-logo-black.svg",
     [theme]
   );
 
@@ -137,7 +143,7 @@ const Navbar = memo(() => {
               >
                 Contact
               </Link>
-              
+
               {/* Role-based navigation */}
               {isAdmin && (
                 <>
@@ -163,7 +169,7 @@ const Navbar = memo(() => {
                   </Link>
                 </>
               )}
-              
+
               {isInstructor && (
                 <Link
                   href="/dashboard/instructor"
@@ -403,6 +409,6 @@ const Navbar = memo(() => {
   );
 });
 
-Navbar.displayName = 'Navbar';
+Navbar.displayName = "Navbar";
 
 export default Navbar;

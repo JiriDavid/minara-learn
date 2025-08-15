@@ -159,7 +159,6 @@ const FeatureCard = ({ icon: Icon, title, description, delay }) => {
   );
 };
 
-
 // Animated course card component
 const CourseCard = ({ course, index }) => {
   const [ref, inView] = useInView({
@@ -222,7 +221,6 @@ const CourseCard = ({ course, index }) => {
   );
 };
 
-
 // Animated stats component
 const StatCard = ({ icon: Icon, value, label, delay }) => {
   const [ref, inView] = useInView({
@@ -263,7 +261,6 @@ const StatCard = ({ icon: Icon, value, label, delay }) => {
     </motion.div>
   );
 };
-
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -563,7 +560,7 @@ export default function Home() {
                   <Button
                     size="lg"
                     variant="secondary"
-                    className="group bg-white text-primary-800 hover:bg-primary-50 dark:bg-gray-600 dark:text-primary-400 dark:border-primary-800" 
+                    className="group bg-white text-primary-800 hover:bg-primary-50 dark:bg-gray-600 dark:text-primary-400 dark:border-primary-800"
                   >
                     Get Started Now
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />

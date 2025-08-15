@@ -1,6 +1,6 @@
 # Minara Learn Learning Management System
 
-A modern, responsive Learning Management System built with Next.js, MongoDB, and Clerk for authentication.
+A modern, responsive Learning Management System built with Next.js and Supabase (Auth + Postgres).
 
 ## Features
 
@@ -15,9 +15,9 @@ A modern, responsive Learning Management System built with Next.js, MongoDB, and
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14 with App Router, React, TailwindCSS, shadcn/ui
-- **Authentication**: Clerk Authentication
-- **Database**: MongoDB with Mongoose
+- **Frontend**: Next.js 15 with App Router, React, TailwindCSS, shadcn/ui
+- **Authentication**: Supabase Authentication
+- **Database**: Supabase Postgres
 - **State Management**: React Context API and Hooks
 - **Styling**: TailwindCSS with custom components
 - **API**: Next.js API Routes
@@ -28,8 +28,7 @@ A modern, responsive Learning Management System built with Next.js, MongoDB, and
 ### Prerequisites
 
 - Node.js 18.x or later
-- MongoDB setup (local or Atlas)
-- Clerk account
+- Supabase account and project
 
 ### Installation
 
@@ -49,27 +48,17 @@ A modern, responsive Learning Management System built with Next.js, MongoDB, and
 3. Create a `.env.local` file in the root directory with the following variables:
 
    ```
-   # MongoDB
-   MONGODB_URI=your_mongodb_connection_string
-
-   # Clerk
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
-   CLERK_SECRET_KEY=your_clerk_secret_key
-   NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-   NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-   NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
-   NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
-
-   # Webhook
-   WEBHOOK_SECRET=your_clerk_webhook_secret
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
    ```
 
-4. Set up your Clerk application:
+4. Set up your Supabase project:
 
-   - Create a new application in the [Clerk Dashboard](https://dashboard.clerk.dev/)
-   - Configure the authentication methods (email, social logins, etc.)
-   - Add your application's domain to the allowed origins
-   - Create a webhook endpoint pointing to `/api/webhooks/clerk` with the User events
+   - Create a new project in the Supabase dashboard
+   - Enable email/password sign-in (and optional OAuth providers)
+   - Add your application's domain to the allowed redirects/origins
+   - Run the SQL in `scripts/supabase-schema.sql` to create tables and RLS policies
 
 5. Run the development server:
 
@@ -92,13 +81,11 @@ minara-learn/
 │   │   └── student/          # Student dashboard
 │   ├── learn/                # Course learning pages
 │   ├── lib/                  # Utility functions and helpers
-│   ├── models/               # MongoDB models
-│   ├── sign-in/              # Custom sign-in page
-│   └── sign-up/              # Custom sign-up page
+│   ├── auth/                 # Auth pages
 ├── public/                   # Static assets
 ├── styles/                   # Global styles
-├── middleware.js             # Clerk middleware for route protection
-├── next.config.js            # Next.js configuration
+├── middleware.js             # Supabase middleware for session refresh
+├── next.config.mjs           # Next.js configuration
 └── package.json              # Project dependencies
 ```
 
@@ -106,14 +93,14 @@ minara-learn/
 
 ### Database Models
 
-The application uses the following main models:
+The application uses the following main tables in Supabase:
 
-- **User**: Stores user information, linked to Clerk users
-- **Course**: Contains course details, curriculum, and metadata
-- **Enrollment**: Tracks student enrollments and progress
-- **Lesson**: Individual lessons within a course
-- **Section**: Groups of lessons within a course
-- **Completion**: Tracks completed lessons by students
+- **profiles**: User profile and role
+- **courses**: Course details, curriculum, and metadata
+- **enrollments**: Tracks student enrollments and progress
+- **lessons**: Individual lessons within a course
+- **sections**: Groups of lessons within a course
+- **completions**: Tracks completed lessons by students
 
 ### Role-Based Access
 
@@ -143,7 +130,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Acknowledgements
 
 - [Next.js](https://nextjs.org/)
-- [Clerk](https://clerk.dev/)
-- [MongoDB](https://www.mongodb.com/)
+- [Supabase](https://supabase.com/)
 - [TailwindCSS](https://tailwindcss.com/)
 - [shadcn/ui](https://ui.shadcn.com/)

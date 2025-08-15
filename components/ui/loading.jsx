@@ -1,35 +1,38 @@
-import { memo } from 'react';
+import { memo } from "react";
 
-const LoadingSpinner = memo(({ size = 'md', className = '' }) => {
+const LoadingSpinner = memo(({ size = "md", className = "" }) => {
   const sizes = {
-    sm: 'h-4 w-4',
-    md: 'h-8 w-8',
-    lg: 'h-12 w-12',
-    xl: 'h-16 w-16'
+    sm: "h-4 w-4",
+    md: "h-8 w-8",
+    lg: "h-12 w-12",
+    xl: "h-16 w-16",
   };
 
   return (
-    <div className={`animate-spin rounded-full border-2 border-blue-600 border-t-transparent ${sizes[size]} ${className}`}>
-    </div>
+    <div
+      className={`animate-spin rounded-full border-2 border-blue-600 border-t-transparent ${sizes[size]} ${className}`}
+    ></div>
   );
 });
 
-LoadingSpinner.displayName = 'LoadingSpinner';
+LoadingSpinner.displayName = "LoadingSpinner";
 
-const PageLoader = memo(({ message = 'Loading...' }) => {
+const PageLoader = memo(({ message = "Loading..." }) => {
   return (
     <div className="fixed inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center">
       <div className="flex flex-col items-center space-y-4">
         <LoadingSpinner size="xl" />
-        <p className="text-slate-600 dark:text-slate-400 animate-pulse">{message}</p>
+        <p className="text-slate-600 dark:text-slate-400 animate-pulse">
+          {message}
+        </p>
       </div>
     </div>
   );
 });
 
-PageLoader.displayName = 'PageLoader';
+PageLoader.displayName = "PageLoader";
 
-const SectionLoader = memo(({ className = '' }) => {
+const SectionLoader = memo(({ className = "" }) => {
   return (
     <div className={`flex items-center justify-center py-12 ${className}`}>
       <LoadingSpinner size="lg" />
@@ -37,9 +40,9 @@ const SectionLoader = memo(({ className = '' }) => {
   );
 });
 
-SectionLoader.displayName = 'SectionLoader';
+SectionLoader.displayName = "SectionLoader";
 
-const CardSkeleton = memo(({ className = '' }) => {
+const CardSkeleton = memo(({ className = "" }) => {
   return (
     <div className={`animate-pulse ${className}`}>
       <div className="bg-slate-200 dark:bg-slate-700 rounded-lg p-6">
@@ -51,20 +54,23 @@ const CardSkeleton = memo(({ className = '' }) => {
   );
 });
 
-CardSkeleton.displayName = 'CardSkeleton';
+CardSkeleton.displayName = "CardSkeleton";
 
 const TableSkeleton = memo(({ rows = 5 }) => {
   return (
     <div className="animate-pulse">
       <div className="h-10 bg-slate-200 dark:bg-slate-700 rounded mb-4"></div>
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="h-12 bg-slate-100 dark:bg-slate-800 rounded mb-2"></div>
+        <div
+          key={i}
+          className="h-12 bg-slate-100 dark:bg-slate-800 rounded mb-2"
+        ></div>
       ))}
     </div>
   );
 });
 
-TableSkeleton.displayName = 'TableSkeleton';
+TableSkeleton.displayName = "TableSkeleton";
 
 // Default export for backward compatibility
 const Loading = memo(() => {
@@ -75,14 +81,14 @@ const Loading = memo(() => {
   );
 });
 
-Loading.displayName = 'Loading';
+Loading.displayName = "Loading";
 
 export default Loading;
 
-export { 
-  LoadingSpinner, 
-  PageLoader, 
-  SectionLoader, 
-  CardSkeleton, 
-  TableSkeleton 
+export {
+  LoadingSpinner,
+  PageLoader,
+  SectionLoader,
+  CardSkeleton,
+  TableSkeleton,
 };

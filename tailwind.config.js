@@ -1,9 +1,6 @@
 // tailwind.config.js
 module.exports = {
-  content: [
-    "./app/**/*.{js,ts,jsx,tsx}",
-    "./components/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ["./app/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
@@ -13,9 +10,11 @@ module.exports = {
         input: "oklch(var(--input) / <alpha-value>)",
         ring: "oklch(var(--ring) / <alpha-value>)",
         primary: "oklch(var(--primary) / <alpha-value>)",
-        "primary-foreground": "oklch(var(--primary-foreground) / <alpha-value>)",
+        "primary-foreground":
+          "oklch(var(--primary-foreground) / <alpha-value>)",
         secondary: "oklch(var(--secondary) / <alpha-value>)",
-        "secondary-foreground": "oklch(var(--secondary-foreground) / <alpha-value>)",
+        "secondary-foreground":
+          "oklch(var(--secondary-foreground) / <alpha-value>)",
         muted: "oklch(var(--muted) / <alpha-value>)",
         "muted-foreground": "oklch(var(--muted-foreground) / <alpha-value>)",
         accent: "oklch(var(--accent) / <alpha-value>)",
@@ -24,11 +23,14 @@ module.exports = {
         card: "oklch(var(--card) / <alpha-value>)",
         "card-foreground": "oklch(var(--card-foreground) / <alpha-value>)",
         popover: "oklch(var(--popover) / <alpha-value>)",
-        "popover-foreground": "oklch(var(--popover-foreground) / <alpha-value>)",
+        "popover-foreground":
+          "oklch(var(--popover-foreground) / <alpha-value>)",
         sidebar: "oklch(var(--sidebar) / <alpha-value>)",
-        "sidebar-foreground": "oklch(var(--sidebar-foreground) / <alpha-value>)",
+        "sidebar-foreground":
+          "oklch(var(--sidebar-foreground) / <alpha-value>)",
         "sidebar-accent": "oklch(var(--sidebar-accent) / <alpha-value>)",
-        "sidebar-accent-foreground": "oklch(var(--sidebar-accent-foreground) / <alpha-value>)",
+        "sidebar-accent-foreground":
+          "oklch(var(--sidebar-accent-foreground) / <alpha-value>)",
         "sidebar-border": "oklch(var(--sidebar-border) / <alpha-value>)",
         "sidebar-ring": "oklch(var(--sidebar-ring) / <alpha-value>)",
       },
@@ -44,7 +46,5 @@ module.exports = {
       },
     },
   },
-  plugins: [
-    require("tailwindcss-animate"),
-  ],
-}
+  plugins: [require("tailwindcss-animate")],
+};

@@ -411,7 +411,9 @@ export default function ProfilePage() {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="student">Student</SelectItem>
-                              <SelectItem value="instructor">Instructor</SelectItem>
+                              <SelectItem value="instructor">
+                                Instructor
+                              </SelectItem>
                               <SelectItem value="admin">Admin</SelectItem>
                             </SelectContent>
                           </Select>
@@ -606,19 +608,14 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent>
               <p className="text-slate-600">
-                Account settings are managed through Clerk. Click the button
-                below to manage your account.
+                Account settings are managed through Supabase Auth within this
+                app. Email/password changes can be handled from your profile or
+                via password reset.
               </p>
             </CardContent>
             <CardFooter>
-              <Button asChild>
-                <a
-                  href="https://clerk.dev/account"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Manage Account
-                </a>
+              <Button disabled title="Coming soon">
+                Manage Account
               </Button>
             </CardFooter>
           </Card>

@@ -56,7 +56,7 @@ export default function StudentDashboard() {
       try {
         // Wait for auth to load
         if (authLoading) return;
-        
+
         // Redirect if not authenticated
         if (!user) {
           router.replace("/auth/signin");
@@ -64,11 +64,14 @@ export default function StudentDashboard() {
         }
 
         // Redirect if not a student
-        if (user && profile && profile.role !== 'student') {
-          console.log('Non-student user accessing student dashboard, redirecting...', profile.role);
-          if (profile.role === 'admin') {
+        if (user && profile && profile.role !== "student") {
+          console.log(
+            "Non-student user accessing student dashboard, redirecting...",
+            profile.role
+          );
+          if (profile.role === "admin") {
             router.push("/dashboard/admin");
-          } else if (profile.role === 'instructor') {
+          } else if (profile.role === "instructor") {
             router.push("/dashboard/instructor");
           } else {
             router.push("/dashboard");
@@ -79,12 +82,18 @@ export default function StudentDashboard() {
         setIsLoading(true);
 
         // Fetch all dashboard data in parallel
-        const [enrollmentsResponse, activityResponse, eventsResponse, recommendationsResponse, achievementsResponse] = await Promise.all([
+        const [
+          enrollmentsResponse,
+          activityResponse,
+          eventsResponse,
+          recommendationsResponse,
+          achievementsResponse,
+        ] = await Promise.all([
           fetch("/api/student/enrollments"),
           fetch("/api/student/activity"),
           fetch("/api/student/events"),
           fetch("/api/student/recommendations"),
-          fetch("/api/student/achievements")
+          fetch("/api/student/achievements"),
         ]);
 
         // Process enrollments data
@@ -92,14 +101,17 @@ export default function StudentDashboard() {
         if (enrollmentsResponse.ok) {
           enrollmentsData = await enrollmentsResponse.json();
         } else {
-          console.warn("Failed to fetch enrollments:", enrollmentsResponse.statusText);
+          console.warn(
+            "Failed to fetch enrollments:",
+            enrollmentsResponse.statusText
+          );
         }
 
         // Process activity data
         let activityData = [];
         if (activityResponse.ok) {
           const rawActivityData = await activityResponse.json();
-          activityData = rawActivityData.map(activity => ({
+          activityData = rawActivityData.map((activity) => ({
             id: activity.id,
             type: activity.type,
             course: activity.course,
@@ -108,7 +120,10 @@ export default function StudentDashboard() {
             icon: activity.icon,
           }));
         } else {
-          console.warn("Failed to fetch activity:", activityResponse.statusText);
+          console.warn(
+            "Failed to fetch activity:",
+            activityResponse.statusText
+          );
         }
 
         // Process events data
@@ -124,7 +139,10 @@ export default function StudentDashboard() {
         if (recommendationsResponse.ok) {
           recommendationsData = await recommendationsResponse.json();
         } else {
-          console.warn("Failed to fetch recommendations:", recommendationsResponse.statusText);
+          console.warn(
+            "Failed to fetch recommendations:",
+            recommendationsResponse.statusText
+          );
         }
 
         // Process achievements data
@@ -132,15 +150,20 @@ export default function StudentDashboard() {
         if (achievementsResponse.ok) {
           achievementsData = await achievementsResponse.json();
         } else {
-          console.warn("Failed to fetch achievements:", achievementsResponse.statusText);
+          console.warn(
+            "Failed to fetch achievements:",
+            achievementsResponse.statusText
+          );
         }
 
         // Transform the API data into the expected dashboard data structure
         const transformedData = {
           enrolledCourses: enrollmentsData?.length || 0,
-          completedCourses: enrollmentsData?.filter((e) => e.progress === 100).length || 0,
+          completedCourses:
+            enrollmentsData?.filter((e) => e.progress === 100).length || 0,
           totalHoursLearned: calculateTotalHours(enrollmentsData || []),
-          certificatesEarned: enrollmentsData?.filter((e) => e.certificateIssued).length || 0,
+          certificatesEarned:
+            enrollmentsData?.filter((e) => e.certificateIssued).length || 0,
           inProgressCourses: enrollmentsData || [],
           recentActivity: activityData || [],
           upcomingEvents: eventsData || [],
@@ -216,8 +239,12 @@ export default function StudentDashboard() {
       <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-3">
-            Welcome back, {profile?.name || user?.email?.split('@')[0] || "Student"}
-            <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
+            Welcome back,{" "}
+            {profile?.name || user?.email?.split("@")[0] || "Student"}
+            <Badge
+              variant="secondary"
+              className="bg-green-100 text-green-800 border-green-200"
+            >
               Student
             </Badge>
           </h1>
@@ -349,7 +376,9 @@ export default function StudentDashboard() {
                   <BookOpen className="h-6 w-6 text-blue-600 dark:text-blue-300" />
                 </div>
                 <h3 className="font-medium text-sm">Browse Courses</h3>
-                <p className="text-xs text-slate-500 mt-1">Discover new learning opportunities</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  Discover new learning opportunities
+                </p>
               </CardContent>
             </Card>
           </Link>
@@ -361,7 +390,9 @@ export default function StudentDashboard() {
                   <GraduationCap className="h-6 w-6 text-green-600 dark:text-green-300" />
                 </div>
                 <h3 className="font-medium text-sm">My Courses</h3>
-                <p className="text-xs text-slate-500 mt-1">View your enrolled courses</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  View your enrolled courses
+                </p>
               </CardContent>
             </Card>
           </Link>
@@ -373,7 +404,9 @@ export default function StudentDashboard() {
                   <Award className="h-6 w-6 text-purple-600 dark:text-purple-300" />
                 </div>
                 <h3 className="font-medium text-sm">Certificates</h3>
-                <p className="text-xs text-slate-500 mt-1">View your achievements</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  View your achievements
+                </p>
               </CardContent>
             </Card>
           </Link>
@@ -385,7 +418,9 @@ export default function StudentDashboard() {
                   <BarChart className="h-6 w-6 text-amber-600 dark:text-amber-300" />
                 </div>
                 <h3 className="font-medium text-sm">Profile</h3>
-                <p className="text-xs text-slate-500 mt-1">Update your information</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  Update your information
+                </p>
               </CardContent>
             </Card>
           </Link>

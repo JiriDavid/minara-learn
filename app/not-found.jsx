@@ -52,17 +52,18 @@ export default function NotFound() {
           <div className="inline-flex items-center justify-center w-24 h-24 bg-red-100 dark:bg-red-900/20 rounded-full mb-6">
             <AlertTriangle className="w-12 h-12 text-red-600 dark:text-red-400" />
           </div>
-          
+
           <h1 className="text-6xl md:text-8xl font-bold text-slate-900 dark:text-white mb-4">
             404
           </h1>
-          
+
           <h2 className="text-2xl md:text-3xl font-semibold text-slate-800 dark:text-slate-200 mb-2">
             Page Not Found
           </h2>
-          
+
           <p className="text-slate-600 dark:text-slate-400 text-lg max-w-md mx-auto">
-            Sorry, we couldn't find the page you're looking for. It might have been moved, deleted, or you entered the wrong URL.
+            Sorry, we couldn't find the page you're looking for. It might have
+            been moved, deleted, or you entered the wrong URL.
           </p>
         </div>
 
@@ -77,9 +78,12 @@ export default function NotFound() {
             <ArrowLeft className="w-4 h-4" />
             Go Back
           </Button>
-          
+
           <Link href="/">
-            <Button size="lg" className="flex items-center gap-2 w-full sm:w-auto">
+            <Button
+              size="lg"
+              className="flex items-center gap-2 w-full sm:w-auto"
+            >
               <Home className="w-4 h-4" />
               Go Home
             </Button>
